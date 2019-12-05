@@ -45,10 +45,11 @@ window.addEventListener("wheel", function(e){
 	}
 	
 	renderSettings.zoom-=(e.deltaY/1000)*renderSettings.zoom;
+	
 	renderSettings.resolution=(1/renderSettings.zoom);
-	if(renderSettings.resolution<0.9){
-		renderSettings.resolution*=0.9;
-	}
+	/*if(renderSettings.resolution<0.9){
+		renderSettings.resolution*=0.2;
+	}*/
 
 	if(renderSettings.resolution>1){
 		renderSettings.resolution=1;

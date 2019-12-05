@@ -4,10 +4,10 @@
 renderSettings = {
 	screenSize : [0,0],
 	resolution : 1,
-	view : [1,1,-1,1],
-	viewTarget : [1,1,-1,1],
+	blockRotation : [1,1,-1,1],
+	blockRotationTarget : [1,1,-1,1],
 	zoom : 1,
-	camera : [0,0],
+	camera : [0,0,0],
 }
 
 
@@ -46,15 +46,8 @@ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 var positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 var positions = [
-0, 0,
-57, 0,
-0, 45,
-
-
-
-57, 45,
-57, 0,
-0, 45,
+0, 0, 0,
+1, 0, 0,
 
 
 ];
@@ -65,7 +58,7 @@ var isometricVAO = gl.createVertexArray();
 gl.bindVertexArray(isometricVAO);
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
-gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 2, gl.FLOAT, false, 0, 0);
+gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
 
 gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
@@ -85,16 +78,18 @@ function render() {
 	gl.uniform2fv(isometricShaderProgram.uniforms.screenSize, renderSettings.screenSize);  // offset it to the right half the screen
 	gl.uniform1f(isometricShaderProgram.uniforms.zoom, renderSettings.zoom);
 	gl.uniform1f(isometricShaderProgram.uniforms.resolution, renderSettings.resolution);
-	gl.uniform2fv(isometricShaderProgram.uniforms.camera, renderSettings.camera);
+	gl.uniform3fv(isometricShaderProgram.uniforms.camera, renderSettings.camera);
+	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
 	// Clear the canvas
-	gl.clearColor(0, 0, 0, 0);
-	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 
 
 	// Bind the attribute/buffer set we want.
 	gl.bindVertexArray(isometricVAO);
 
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.drawArrays(gl.POINTS, 0, 2);
 	
 	requestAnimationFrame(render);
 }
