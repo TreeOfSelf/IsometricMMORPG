@@ -22,10 +22,39 @@ window.addEventListener("mousemove", function(e){
 
 window.addEventListener("keydown", function(e){
 	
+	//FullScreen
 	if(e.key=='Enter'){
 		canvas.requestFullscreen();
 	}
 	
+	
+	//Rotations (Sloppy)
+	if(e.key=='q' || e.key=='Q'){
+		renderSettings.blockRotationTarget=[-1,1,1,1];		
+	}
+	if(e.key=='w' || e.key=='W'){
+		renderSettings.blockRotationTarget=[1,1,1,-1];
+	}
+	if(e.key=='e' || e.key=='E'){
+		renderSettings.blockRotationTarget=[1,-1,-1,-1];
+	}
+	if(e.key=='r' || e.key=='R'){
+		renderSettings.blockRotationTarget=[-1,-1,-1,1];
+	}
+	
+	if(e.key=='a' || e.key=='A'){
+		renderSettings.blockRotationTarget=[-1,1,-1,-1];		
+	}
+	if(e.key=='s' || e.key=='S'){
+		renderSettings.blockRotationTarget=[1,1,-1,1];		
+	}
+	if(e.key=='d' || e.key=='D'){
+		renderSettings.blockRotationTarget=[1,-1,1,1];	
+	}
+	if(e.key=='f' || e.key=='F'){
+		renderSettings.blockRotationTarget=[-1,-1,1,-1];
+	}
+		
 	
 	playerControls.keys[e.key.toUpperCase()]=1;
 });
@@ -47,9 +76,6 @@ window.addEventListener("wheel", function(e){
 	renderSettings.zoom-=(e.deltaY/1000)*renderSettings.zoom;
 	
 	renderSettings.resolution=(1/renderSettings.zoom);
-	/*if(renderSettings.resolution<0.9){
-		renderSettings.resolution*=0.2;
-	}*/
 
 	if(renderSettings.resolution>1){
 		renderSettings.resolution=1;
@@ -62,10 +88,10 @@ window.addEventListener("wheel", function(e){
 	}
 });
 
+//Ran every frame to process controls
 function playerControlFunction(){
-
-	if(playerControls.mouseClickPosition[0]!=-1){
-		
+	//Move camera
+	if(playerControls.mouseClickPosition[0]!=-1){	
 		renderSettings.camera[0]-=(playerControls.mouseClickPosition[0] - playerControls.mousePosition[0])*(0.04/renderSettings.zoom);
 		renderSettings.camera[1]+=(playerControls.mouseClickPosition[1] - playerControls.mousePosition[1])*(0.04/renderSettings.zoom);
 	}
