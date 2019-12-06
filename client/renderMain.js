@@ -4,8 +4,8 @@
 renderSettings = {
 	screenSize : [0,0],
 	resolution : 1,
-	blockRotation : [1,1,-1,1],
-	blockRotationTarget : [1,1,-1,1],
+	blockRotation : [-1,1,1,1],
+	blockRotationTarget : [-1,1,1,1],
 	zoom : 1,
 	camera : [0,0,0],
 }
@@ -50,6 +50,10 @@ var positions = [
 1, 0, 0,
 
 
+
+
+
+
 ];
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
@@ -82,16 +86,17 @@ function render() {
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
 	// Clear the canvas
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-
 
 	// Bind the attribute/buffer set we want.
 	gl.bindVertexArray(isometricVAO);
+	
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	gl.drawArrays(gl.POINTS, 0, 2);
+
 	
 	requestAnimationFrame(render);
+
 }
 
 render();

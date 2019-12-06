@@ -5,18 +5,18 @@ var gl = canvas.getContext("webgl2",
 {
 	antialias : false,
 	alpha : false,
+	premultipliedAlpha: false,
 }
 );
-
 gl.enable(gl.BLEND);
-gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 gl.enable(gl.DEPTH_TEST);
-gl.depthFunc(gl.LESS);   
+gl.depthFunc(gl.GREATER);   
 canvas.style.height='95vh';
 canvas.style.width='95vw';
 
 gl.clearColor(0.15, 0.15, 0.15, 1.0);  
-gl.clearDepth(100.0);  
+gl.clearDepth(-10000.0);  
 
 
 function loadTexture(url){

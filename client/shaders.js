@@ -19,17 +19,17 @@ void main() {
 
 	gl_Position = vec4( 
 	//Isometric X Position
-	(((u_blockRotation[0]*(a_position[0]) + u_blockRotation[1]*(a_position[1]))*(28.0))
+	(((u_blockRotation[0]*(a_position[0]) + u_blockRotation[1]*(a_position[1]))*(27.0))
 	//Camera Offset , resolution and screen size adjustments 
 	-u_camera[0])*u_resolution*u_zoom/u_screenSize[0],
 	//Isometric Y Position
-	(((u_blockRotation[2]*(a_position[0]) + u_blockRotation[3]*(a_position[1]))*(13.5))-((a_position[2]-u_camera[2])*45.0)
+	(((u_blockRotation[2]*(a_position[0]) + u_blockRotation[3]*(a_position[1]))*(13.0))-((a_position[2]-u_camera[2])*45.0)
 	//Camera Offset , resolution and screen size adjustments 
 	-u_camera[1])*u_resolution*u_zoom/u_screenSize[1],
 	0.0,
 	0.5);
 	//Set Depth based on final Y position and block Z
-	gl_Position[2] = (gl_Position[1] + (a_position[2]*100.0))*0.005;
+	gl_Position[2] = (-gl_Position[1] - (a_position[2]*100.0))*0.005;
 	//Size based on zoom 
 	gl_PointSize = 57.0 * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
