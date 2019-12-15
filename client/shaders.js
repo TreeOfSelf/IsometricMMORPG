@@ -18,7 +18,7 @@ void main() {
 
 
 	gl_Position = vec4(0.0,0.0,0.0,0.5);
-	gl_Position.xy=  u_pixelMatrix* a_position.xy / u_screenSize;  ;
+	gl_Position.xy=  u_pixelMatrix* (a_position.xy-u_camera.xy) / u_screenSize;  ;
 	gl_Position.y-=(a_position[2]*14.5)/u_screenSize[1];
 	gl_Position[2] = (gl_Position[1] + a_position[2]*100.0)*0.001;
 	//Size based on zoom 

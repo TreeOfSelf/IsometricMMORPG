@@ -116,9 +116,18 @@ function playerControlFunction(){
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 	}
 	
-	if(playerControls.mouseClickPosition[0]!=-1){	
-		renderSettings.camera[0]-=(playerControls.mouseClickPosition[0] - playerControls.mousePosition[0])*(0.04/renderSettings.zoom);
-		renderSettings.camera[1]+=(playerControls.mouseClickPosition[1] - playerControls.mousePosition[1])*(0.04/renderSettings.zoom);
+	if(playerControls.mousePosition[0]/canvas.width > 0.8/renderSettings.resolution || playerControls.mousePosition[0]/canvas.width < 0.2*renderSettings.resolution || playerControls.mousePosition[1]/canvas.height > 0.8/renderSettings.resolution || playerControls.mousePosition[1]/canvas.height < 0.2*renderSettings.resolution  ){	
+	
+		var moveVector = glMatrix.vec2.fromValues(
+		-((canvas.width/2) - playerControls.mousePosition[0]*renderSettings.resolution)*(0.04*Math.min(1,renderSettings.zoom))
+		,((canvas.height/2) - playerControls.mousePosition[1]*renderSettings.resolution)*(0.04*Math.min(1,renderSettings.zoom))
+		);
+		glMatrix.vec2.transformMat2(moveVector,moveVector,cursorMatrix);
+	
+		//renderSettings.camera[0]-=(playerControls.mouseClickPosition[0] - playerControls.mousePosition[0])*(0.004/renderSettings.zoom);
+		//renderSettings.camera[1]+=(playerControls.mouseClickPosition[1] - playerControls.mousePosition[1])*(0.004/renderSettings.zoom);
+		renderSettings.camera[0]+=moveVector[0];
+		renderSettings.camera[1]+=moveVector[1];
 	}
 	
 }

@@ -8,12 +8,11 @@ var gl = canvas.getContext("webgl2",
 	premultipliedAlpha: false,
 }
 );
+
 //gl.enable(gl.BLEND);
 //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
-//canvas.style.height='95vh';
-//canvas.style.width='95vw';
 gl.clearColor(0.15, 0.15, 0.15, 1.0);  
 gl.clearDepth(5000000000);  
 

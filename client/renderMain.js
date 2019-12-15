@@ -14,13 +14,21 @@ renderSettings = {
 }
 
 
+viewMatrix = glMatrix.mat2.fromValues(
+27* renderSettings.blockRotation[0] 
+,13* renderSettings.blockRotation[2]  
+,27 * renderSettings.blockRotation[1]
+,13* renderSettings.blockRotation[3]
+);
+cursorMatrix = glMatrix.mat2.create();
+glMatrix.mat2.invert(cursorMatrix,viewMatrix);
 
 
 //Function to resize the canvas to fit the screen
 resizeCanvas = function(){
 	
 	
-	renderSettings.screenSize = [Math.round(window.innerWidth*0.95*(renderSettings.resolution)),Math.round(window.innerHeight*0.95*(renderSettings.resolution))];
+	renderSettings.screenSize = [Math.round(window.innerWidth*(renderSettings.resolution)),Math.round(window.innerHeight*(renderSettings.resolution))];
 	//renderSettings.screenSize=[800,400];
 	canvas.width = renderSettings.screenSize[0];
 	canvas.height = renderSettings.screenSize[1];
@@ -134,11 +142,11 @@ function render() {
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
 	
 	
-	var viewMatrix = glMatrix.mat2.fromValues(
-	27* renderSettings.blockRotation[0] 
-	,13* renderSettings.blockRotation[2]  
-	,27 * renderSettings.blockRotation[1]
-	,13* renderSettings.blockRotation[3]
+	viewMatrix = glMatrix.mat2.fromValues(
+	27* renderSettings.blockRotation[0]*renderSettings.zoom*renderSettings.resolution 
+	,13* renderSettings.blockRotation[2] *renderSettings.zoom*renderSettings.resolution  
+	,27 * renderSettings.blockRotation[1]*renderSettings.zoom*renderSettings.resolution
+	,13* renderSettings.blockRotation[3]*renderSettings.zoom*renderSettings.resolution
 	);
 	gl.uniformMatrix2fv(isometricShaderProgram.uniforms.pixelMatrix, false, viewMatrix);
 
@@ -151,18 +159,20 @@ function render() {
 	//Clear previous buffers then draw
 	//gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	 aspect = canvas.height/canvas.width;
 	//gl.drawArrays(gl.POINTS, 0, positions.length/3);
 
 	
 
 	
-	var cursorMatrix = glMatrix.mat2.create();
-	var camVector = glMatrix.vec2.fromValues(playerControls.mousePosition[0]-(canvas.width/2),-playerControls.mousePosition[1]+(canvas.height/2));
+
+	var camVector = glMatrix.vec2.fromValues(playerControls.mousePosition[0]*renderSettings.resolution-(canvas.width/2),-playerControls.mousePosition[1]*renderSettings.resolution+(canvas.height/2));
+
+	
+	cursorMatrix = glMatrix.mat2.create();
 	glMatrix.mat2.invert(cursorMatrix,viewMatrix);
 	glMatrix.vec2.transformMat2(camVector,camVector,cursorMatrix);
-	mapX = (camVector[0]);
-	mapY = (camVector[1]);
+	mapX = (camVector[0]+renderSettings.camera[0]);
+	mapY = (camVector[1]+renderSettings.camera[1]);
 	
 	
 
