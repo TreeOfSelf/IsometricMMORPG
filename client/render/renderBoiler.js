@@ -1,16 +1,23 @@
 
 
 var canvas = document.getElementById("canvas");
+
+
+canvas.oncontexmenu = function(e){
+	console.log('ff');
+	e.preventDefault();
+};
+
 var gl = canvas.getContext("webgl2",
 {
-	antialias : false,
+	antialias : true,
 	alpha : false,
-	premultipliedAlpha: false,
+	premultipliedAlpha: true,
 }
 );
 
-//gl.enable(gl.BLEND);
-//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
 gl.clearColor(0.15, 0.15, 0.15, 1.0);  
@@ -69,4 +76,4 @@ function createProgram(gl, vertexShader, fragmentShader) {
   return undefined;
 }
 
-var blockTexture = loadTexture('texture.png');
+var blockTexture = loadTexture('blockTexture.png');

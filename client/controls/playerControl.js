@@ -4,26 +4,39 @@ playerControls = {
 	mouseClickPosition : [-1,-1],
 	mousePosition : [-1,-1],
 	keys : [],
-	blockType : 0,
+	blockType : 1,
 }
 
 
 
 
 var placing =0;
+var deleting=0;
+
 
 
 //Mouse camera move
 window.addEventListener("mousedown", function(e){
+
+	
 	
 	playerControls.mouseClickPosition = [playerControls.mousePosition[0],playerControls.mousePosition[1]];
 	//canvas.requestPointerLock();
-	placing=1;
+	if(e.button==0){
+		placing=1;
+	}else{
+		deleting=1;
+	}
 });
 
 window.addEventListener("mouseup", function(e){
 	playerControls.mouseClickPosition = [-1,-1];
+	
+	if(e.button==0){
 	placing=0;
+	}else{
+	deleting=0;
+	}
 });
 
 window.addEventListener("mousemove", function(e){
@@ -43,6 +56,29 @@ window.addEventListener("keydown", function(e){
 		canvas.requestFullscreen();
 	}
 	
+	
+	if(e.key=='1'){
+		playerControls.blockType=1;
+	}
+	if(e.key=='2'){
+		playerControls.blockType=2;
+	}
+	if(e.key=='3'){
+		playerControls.blockType=3;
+	}	
+	if(e.key=='4'){
+		playerControls.blockType=4;
+	}
+	if(e.key=='5'){
+		playerControls.blockType=5;
+	}
+	if(e.key=='6'){
+		playerControls.blockType=6;
+	}
+	if(e.key=='7'){
+		playerControls.blockType=7;
+	}			
+		
 	
 	//Rotations (Sloppy)
 	if(e.key=='q' || e.key=='Q'){
@@ -108,15 +144,24 @@ window.addEventListener("wheel", function(e){
 function playerControlFunction(){
 	//Move camera
 	if(placing==1){
-	 positions.push(Math.round(mapX),Math.round(mapY),0,);
-	 textureCoords.push(0.01,0,);
-	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+		
+		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType]);
+		//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
+	}
+	if(deleting==1){
+		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),0]);
+
+		//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),0);		
 	}
 	
-	if(playerControls.mousePosition[0]/canvas.width > 0.8/renderSettings.resolution || playerControls.mousePosition[0]/canvas.width < 0.2*renderSettings.resolution || playerControls.mousePosition[1]/canvas.height > 0.8/renderSettings.resolution || playerControls.mousePosition[1]/canvas.height < 0.2*renderSettings.resolution  ){	
+	if(playerControls.keys['O']==1){
+		renderSettings.camera[2]+=0.1;
+	}
+	if(playerControls.keys['P']==1){
+		renderSettings.camera[2]-=0.1;
+	}
+	
+	if( (playerControls.mousePosition[0]/canvas.width > 0.8/renderSettings.resolution || playerControls.mousePosition[0]/canvas.width < 0.2*renderSettings.resolution || playerControls.mousePosition[1]/canvas.height > 0.8/renderSettings.resolution || playerControls.mousePosition[1]/canvas.height < 0.2*renderSettings.resolution) && placing==0 && deleting==0 ){	
 	
 		var moveVector = glMatrix.vec2.fromValues(
 		-((canvas.width/2) - playerControls.mousePosition[0]*renderSettings.resolution)*(0.04*Math.min(1,renderSettings.zoom))

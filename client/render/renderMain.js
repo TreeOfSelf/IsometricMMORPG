@@ -40,51 +40,9 @@ resizeCanvas = function(){
 
 
 gl.useProgram(isometricProgram)
-//Texture
-var texCoordBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-var textureCoords = [
-/*0.01,0,
-0.01,0,
-0.01,0,
-0.01,0,
 
-0.34,0,
-0.34,0,
-0.34,0,
-0.34,0,
-0.34,0,
-
-0.68,0,
-0.68,0,
-0.68,0,
-0.68,0,
-0.68,0,
-
-0.01,0,
-0.01,0,
-0.01,0,
-0.01,0,
-0.01,0,
-0.01,0,*/
-];
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
- 
-
-//Position
-var positionBuffer = gl.createBuffer();
+var cursorTextureBuffer = gl.createBuffer();
 var cursorBuffer = gl.createBuffer();
-
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-var positions = [
-
-
-
-
-
-];
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
 
 var isometricVAO = gl.createVertexArray();
 gl.bindVertexArray(isometricVAO);
@@ -93,16 +51,7 @@ gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
 gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
 gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
 
-
-
-
-
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
-gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
-
-
-gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+gl.bindBuffer(gl.ARRAY_BUFFER, cursorTextureBuffer);
 gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
 gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, false, 0, 0);
 
@@ -140,7 +89,8 @@ function render() {
 	gl.uniform1f(isometricShaderProgram.uniforms.resolution, renderSettings.resolution);
 	gl.uniform3fv(isometricShaderProgram.uniforms.camera, renderSettings.camera);
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
-	
+	gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.162,1.26*0.5]);
+	gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
 	
 	viewMatrix = glMatrix.mat2.fromValues(
 	27* renderSettings.blockRotation[0]*renderSettings.zoom*renderSettings.resolution 
@@ -151,17 +101,10 @@ function render() {
 	gl.uniformMatrix2fv(isometricShaderProgram.uniforms.pixelMatrix, false, viewMatrix);
 
 
-	//26,12
-
-	// Bind the attribute/buffer set we want.
 	gl.bindVertexArray(isometricVAO);
 	
 	//Clear previous buffers then draw
 	//gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	//gl.drawArrays(gl.POINTS, 0, positions.length/3);
-
-	
 
 	
 
@@ -175,27 +118,38 @@ function render() {
 	mapY = (camVector[1]+renderSettings.camera[1]);
 	
 	
-
-	
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-	gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
-	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
-
-		
-	gl.drawArrays(gl.POINTS,0,positions.length/3);
-	
-	gl.bindBuffer(gl.ARRAY_BUFFER,cursorBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
-	[mapX,mapY,0]
-	), gl.STATIC_DRAW);
-	
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
+	[mapX,mapY,Math.round(-renderSettings.camera[2])]
+	), gl.DYNAMIC_DRAW);
 	gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, cursorTextureBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
+	block_get_texture(playerControls.blockType)
+	), gl.DYNAMIC_DRAW);
+	gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
+	gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, false, 0, 0);
 
 	
 	gl.drawArrays(gl.POINTS, 0, 1);
+
+	
+	for(var i=0;i<activeChunks.length;i++){
+		var chunkID = activeChunks[i];
+		if(chunk[chunkID].flags.reDraw==1){
+			chunk[chunkID].flags.reDraw=0;
+			chunk_draw(chunkID);
+		}
+		
+		if(chunk[chunkID].drawData.block.position.length>0){
+			gl.bindVertexArray(chunk[chunkID].blockVAO);	
+			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.block.position.length/3);
+		}
+	}
+
 
 	//Request next frame
 	requestAnimationFrame(render);

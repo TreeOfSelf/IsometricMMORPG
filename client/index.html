@@ -4,11 +4,13 @@
 	  <link rel="stylesheet" href="styles.css">
 	</head>
   <body>
-	<canvas id="canvas" style="image-rendering: pixelated;"></canvas>
-    <script src="gl-matrix-min.js"></script> 
-    <script src="playerControl.js"></script> 
-    <script src="renderBoiler.js"></script> 
-    <script src="shaders.js"></script> 
-    <script src="renderMain.js"></script> 
+	<canvas id="canvas" oncontextmenu="return false;"></canvas>
+    <script src="render/gl-matrix-min.js"></script> 
+    <script src="controls/playerControl.js"></script> 
+    <script src="block/blockControl.js"></script> 
+    <script src="render/renderBoiler.js"></script> 
+    <script src="render/shaders.js"></script> 
+    <script src="render/renderMain.js"></script> 
+    <script src="network/networkControl.js"></script> 
   </body>
 </html>
