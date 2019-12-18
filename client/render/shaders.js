@@ -12,6 +12,7 @@ uniform vec4 u_blockRotation;
 uniform vec2 u_blockSize;
 uniform mat2 u_pixelMatrix;
 uniform float u_pixelSize;
+uniform float u_pixelOffset;
 
 out vec2 v_texcoord;
 out float v_colorChange;
@@ -21,8 +22,8 @@ void main() {
 
 	gl_Position = vec4(0.0,0.0,0.0,0.5);
 	gl_Position.xy=  u_pixelMatrix* (a_position.xy-u_camera.xy) / u_screenSize;
-	gl_Position.y+=((-a_position[2]-u_camera[2])*14.5*u_resolution*u_zoom)/u_screenSize[1];
-	gl_Position[2] = (gl_Position[1] + a_position[2]*5.0)*0.0001;
+	gl_Position.y+=((-a_position[2]-u_camera[2]-u_pixelOffset)*14.5*u_resolution*u_zoom)/u_screenSize[1];
+	gl_Position[2] = (gl_Position[1]/u_zoom*100.0 +(u_pixelOffset*2.6)+ a_position[2]*3.0)*0.0001;
 	//Size based on zoom 
 	gl_PointSize = u_pixelSize * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
@@ -77,6 +78,7 @@ isometricShaderProgram = {
 		pixelMatrix : gl.getUniformLocation(isometricProgram,"u_pixelMatrix"),
 		pixelSize : gl.getUniformLocation(isometricProgram,"u_pixelSize"),
 		textureResolution : gl.getUniformLocation(isometricProgram,"u_textureResolution"),
+		pixelOffset : gl.getUniformLocation(isometricProgram,"u_pixelOffset"),
 	},
 }
 

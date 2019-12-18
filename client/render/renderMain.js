@@ -55,11 +55,9 @@ gl.bindBuffer(gl.ARRAY_BUFFER, cursorTextureBuffer);
 gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
 gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, false, 0, 0);
 
+
 gl.activeTexture(gl.TEXTURE0);
-gl.bindTexture(gl.TEXTURE_2D, blockTexture);
 gl.uniform1i(isometricShaderProgram.uniforms.sampler, 0);
-
-
 
 function render() {
 
@@ -89,8 +87,19 @@ function render() {
 	gl.uniform1f(isometricShaderProgram.uniforms.resolution, renderSettings.resolution);
 	gl.uniform3fv(isometricShaderProgram.uniforms.camera, renderSettings.camera);
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
-	gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.162,1.26*0.5]);
-	gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
+	if(playerControls.placing==0){
+		gl.uniform1f(isometricShaderProgram.uniforms.notSquare,1);
+		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.162,1.26*0.5]);
+		gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
+		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, 0.0);
+		gl.bindTexture(gl.TEXTURE_2D, blockTexture);
+	}else{
+		gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
+		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
+		gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);		
+		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -2.0);
+		gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
+	}
 	
 	viewMatrix = glMatrix.mat2.fromValues(
 	27* renderSettings.blockRotation[0]*renderSettings.zoom*renderSettings.resolution 
@@ -116,7 +125,10 @@ function render() {
 	glMatrix.vec2.transformMat2(camVector,camVector,cursorMatrix);
 	mapX = (camVector[0]+renderSettings.camera[0]);
 	mapY = (camVector[1]+renderSettings.camera[1]);
-	
+	if(playerControls.placing==0){
+		mapX=Math.round(mapX);
+		mapY=Math.round(mapY);
+	}
 	
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
@@ -127,9 +139,13 @@ function render() {
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorTextureBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
-	block_get_texture(playerControls.blockType)
-	), gl.DYNAMIC_DRAW);
+	
+	if(playerControls.placing==0){
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(block_get_texture(playerControls.blockType)), gl.DYNAMIC_DRAW);
+	}else{
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(scenery_get_texture(playerControls.blockType)), gl.DYNAMIC_DRAW);		
+	}
+	
 	gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, false, 0, 0);
 
@@ -139,15 +155,35 @@ function render() {
 	
 	for(var i=0;i<activeChunks.length;i++){
 		var chunkID = activeChunks[i];
-		if(chunk[chunkID].flags.reDraw==1){
-			chunk[chunkID].flags.reDraw=0;
-			chunk_draw(chunkID);
+		if(chunk[chunkID].flags.reDrawBlock==1){
+			chunk[chunkID].flags.reDrawBlock=0;
+			chunk_draw_block(chunkID);
+		}
+		if(chunk[chunkID].flags.reDrawScenery==1){
+			chunk[chunkID].flags.reDrawScenery=0;
+			chunk_draw_scenery(chunkID);
 		}
 		
 		if(chunk[chunkID].drawData.block.position.length>0){
 			gl.bindVertexArray(chunk[chunkID].blockVAO);	
+			gl.bindTexture(gl.TEXTURE_2D, blockTexture);
+			gl.uniform1f(isometricShaderProgram.uniforms.notSquare,1);
+			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.162,1.26*0.5]);
+			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
+			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, 0.0);
 			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.block.position.length/3);
 		}
+	
+		if(chunk[chunkID].drawData.scenery.position.length>0){
+			gl.bindVertexArray(chunk[chunkID].sceneryVAO);	
+			gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
+			gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
+			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
+			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
+			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -2.0);
+			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.scenery.position.length/3);
+		}
+		
 	}
 
 

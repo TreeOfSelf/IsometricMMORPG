@@ -110,8 +110,10 @@ function chunk_create(x,y,z){
 		chunk[chunkID]={
 			coords : [x,y,z],
 			blockArray : new Uint8Array(Math.pow(blockSettings.chunk.XYZ,3)).fill(0),	
+			sceneryArray  : [],
 			flags : {
-				reDraw : 0,
+				reDrawBlock : 0,
+				reDrawScenery : 0,
 				processing : 0,
 			},
 			drawData : {
@@ -138,35 +140,75 @@ function chunk_create(x,y,z){
 			},
 		};
 	}
-	chunk[chunkID].sceneryArray=[];
-	for(i=0;i<Math.pow(blockSettings.chunk.XYZ,3);i++){
-		chunk[chunkID].sceneryArray[i]=[];
-		
-	}
 	
 }
 
-function chunk_draw(chunkID){
+function chunk_draw_scenery(chunkID){
+	
+	//Reset draw data
+	chunk[chunkID].drawData.scenery.position = [];
+	chunk[chunkID].drawData.scenery.textureCoords=[];
+
+
+	
+	//loop through chunk scenery
+	for(var k=0;k<chunk[chunkID].sceneryArray.length;k++){
+		//if block exists
+		if(chunk[chunkID].sceneryArray[k]!=null && chunk[chunkID].sceneryArray[k].length!=0){
+			//get xyz position for drawing
+			var pos = block_getID(k);
+			
+			//loop through scenery in lock
+			for(var l=0;l<chunk[chunkID].sceneryArray[k].length;l++){
+			
+				chunk[chunkID].drawData.scenery.position.push(chunk[chunkID].sceneryArray[k][l][0]+(chunk[chunkID].coords[0]*blockSettings.chunk.XYZ),chunk[chunkID].sceneryArray[k][l][1]+(chunk[chunkID].coords[1]*blockSettings.chunk.XYZ),chunk[chunkID].sceneryArray[k][l][2]+(chunk[chunkID].coords[2]*blockSettings.chunk.XYZ));
+				chunk[chunkID].drawData.scenery.textureCoords=chunk[chunkID].drawData.scenery.textureCoords.concat(scenery_get_texture(chunk[chunkID].sceneryArray[k][l][3]));
+				
+			}
+		}
+		
+	}
+	
+	
+	gl.bindVertexArray(chunk[chunkID].sceneryVAO);
+
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, chunk[chunkID].buffers.scenery.position);
+	gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
+	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(chunk[chunkID].drawData.scenery.position), gl.STATIC_DRAW);
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, chunk[chunkID].buffers.scenery.textureCoords);
+	gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
+	gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, false, 0, 0);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(chunk[chunkID].drawData.scenery.textureCoords), gl.STATIC_DRAW);
+	
+	
+}
+
+
+function chunk_draw_block(chunkID){
 	
 	//Reset draw data
 	chunk[chunkID].drawData.block.position = [];
 	chunk[chunkID].drawData.block.textureCoords=[];
-	chunk[chunkID].drawData.scenery.position = [];
-	chunk[chunkID].drawData.scenery.textureCoords=[];
-	//loop through chunk
+
+	//loop through chunk blocks
 	for(var k=0;k<chunk[chunkID].blockArray.length;k++){
 		//if block exists
 		if(chunk[chunkID].blockArray[k]!=0){
 			//get xyz position for drawing
 			var pos = block_getID(k);
 			chunk[chunkID].drawData.block.position.push(pos[0]+(chunk[chunkID].coords[0]*blockSettings.chunk.XYZ),pos[1]+(chunk[chunkID].coords[1]*blockSettings.chunk.XYZ),pos[2]+(chunk[chunkID].coords[2]*blockSettings.chunk.XYZ));
-			chunk[chunkID].drawData.block.textureCoords=chunk[chunkID].drawData.textureCoords.concat(block_get_texture(chunk[chunkID].blockArray[k]));
+			chunk[chunkID].drawData.block.textureCoords=chunk[chunkID].drawData.block.textureCoords.concat(block_get_texture(chunk[chunkID].blockArray[k]));
 		}
-		
 	}
+		
 	
 	gl.bindVertexArray(chunk[chunkID].blockVAO);
 
+
+	gl.bindTexture(gl.TEXTURE_2D, blockTexture);
 	gl.bindBuffer(gl.ARRAY_BUFFER, chunk[chunkID].buffers.block.position);
 	gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
@@ -211,7 +253,7 @@ block_change = function(x,y,z,change){
 
 	
 	//Flag chunk to re-draw
-	chunk[chunkID].flags.reDraw=1;
+	chunk[chunkID].flags.reDrawBlock=1;
 
 }
 
@@ -253,22 +295,25 @@ function block_get_texture(textureID){
 //Scenery
 scenery_change = function(x,y,z,change){
 	
-	var chunkPosition = chunk_get(x,y,z);
+	var chunkPosition = chunk_get(Math.round(x),Math.round(x),z);
 	var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
-	var blockLocation = [(x) - (chunkPosition[0]*blockSettings.chunk.XYZ), (y) - (chunkPosition[1]*blockSettings.chunk.XYZ),(z) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
+	var blockLocation = [(Math.round(x)) - (chunkPosition[0]*blockSettings.chunk.XYZ), (Math.round(x)) - (chunkPosition[1]*blockSettings.chunk.XYZ),(z) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
 	var blockIndex = blockLocation[0]+blockLocation[1]*blockSettings.chunk.XYZ+blockLocation[2]*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
 
 	if(chunk[chunkID]==null){
 	chunk_create(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
 	}
 	
+	if(chunk[chunkID].sceneryArray[blockIndex]==null){
+		chunk[chunkID].sceneryArray[blockIndex]=[];
+	}
+	
 
-	chunk[chunkID].sceneryArray[blockIndex].push(change);	
-
+	chunk[chunkID].sceneryArray[blockIndex].push([x-(chunkPosition[0]*blockSettings.chunk.XYZ),y-(chunkPosition[1]*blockSettings.chunk.XYZ),z-(chunkPosition[2]*blockSettings.chunk.XYZ),change]);	
 
 	
 	//Flag chunk to re-draw
-	chunk[chunkID].flags.reDraw=1;
+	chunk[chunkID].flags.reDrawScenery=1;
 
 }
 
@@ -276,6 +321,9 @@ function scenery_get_texture(textureID){
 	switch(textureID){
 		case 1:
 			return([0.00,0]);
+		break;
+		case 2:
+			return([58/100,0]);
 		break;
 	}
 }

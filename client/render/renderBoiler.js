@@ -10,9 +10,9 @@ canvas.oncontexmenu = function(e){
 
 var gl = canvas.getContext("webgl2",
 {
-	antialias : true,
+	antialias : false,
 	alpha : false,
-	premultipliedAlpha: true,
+	premultipliedAlpha: false,
 }
 );
 
@@ -77,3 +77,4 @@ function createProgram(gl, vertexShader, fragmentShader) {
 }
 
 var blockTexture = loadTexture('blockTexture.png');
+var sceneryTexture = loadTexture('sceneryTexture.png');

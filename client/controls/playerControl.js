@@ -5,6 +5,8 @@ playerControls = {
 	mousePosition : [-1,-1],
 	keys : [],
 	blockType : 1,
+	// 0 == block 1 == scenery
+	placing : 0,
 }
 
 
@@ -23,7 +25,11 @@ window.addEventListener("mousedown", function(e){
 	playerControls.mouseClickPosition = [playerControls.mousePosition[0],playerControls.mousePosition[1]];
 	//canvas.requestPointerLock();
 	if(e.button==0){
-		placing=1;
+		if(playerControls.placing==0){
+			placing=1;
+		}else{
+			scenery_change(mapX,mapY,Math.round(-renderSettings.camera[2]),playerControls.blockType)
+		}
 	}else{
 		deleting=1;
 	}
@@ -78,6 +84,14 @@ window.addEventListener("keydown", function(e){
 	if(e.key=='7'){
 		playerControls.blockType=7;
 	}			
+	
+	if(e.key=='M' || e.key=='m'){
+		if(playerControls.placing==0){
+			playerControls.placing=1;
+		}else{
+			playerControls.placing=0;
+		}
+	}
 		
 	
 	//Rotations (Sloppy)
@@ -145,13 +159,14 @@ function playerControlFunction(){
 	//Move camera
 	if(placing==1){
 		
-		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType]);
-		//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
+		if(playerControls.placing==0){
+			//message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType]);
+			block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
+		}
 	}
 	if(deleting==1){
 		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),0]);
-
-		//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),0);		
+	
 	}
 	
 	if(playerControls.keys['O']==1){
