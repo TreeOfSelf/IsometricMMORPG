@@ -87,8 +87,8 @@ function message_receive(data,connectID){
 			message_send_tcp_all(['block_change',data[1],data[2],data[3],data[4]]);
 		break;
 		case "scenery_change":
-			data[1]+=Math.random()*0.45-Math.random()*0.45;
-			data[2]+=Math.random()*0.45-Math.random()*0.45;
+			data[1]+=Math.random()*0.3-Math.random()*0.3;
+			data[2]+=Math.random()*0.3-Math.random()*0.3;
 			scenery_change(data[1],data[2],data[3],data[4]);
 			message_send_tcp_all(['scenery_change',data[1],data[2],data[3],data[4]]);			
 		break;

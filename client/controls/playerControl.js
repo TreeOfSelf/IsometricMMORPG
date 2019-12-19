@@ -84,7 +84,13 @@ window.addEventListener("keydown", function(e){
 	}
 	if(e.key=='7'){
 		playerControls.blockType=7;
-	}			
+	}	
+	if(e.key=='8'){
+		playerControls.blockType=8;
+	}	
+	if(e.key=='9'){
+		playerControls.blockType=9;
+	}		
 	
 	if(e.key=='M' || e.key=='m'){
 		if(playerControls.placing==0){

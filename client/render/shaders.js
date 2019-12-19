@@ -23,7 +23,7 @@ void main() {
 	gl_Position = vec4(0.0,0.0,0.0,0.5);
 	gl_Position.xy=  u_pixelMatrix* (a_position.xy-u_camera.xy) / u_screenSize;
 	gl_Position.y+=((-a_position[2]-u_camera[2]-u_pixelOffset)*14.5*u_resolution*u_zoom)/u_screenSize[1];
-	gl_Position[2] = ((gl_Position[1]/u_zoom*38.0) +(u_pixelOffset*0.8+a_position[2]*1.7))*0.0001;
+	gl_Position[2] = ((gl_Position[1]/u_zoom*15.0) +(u_pixelOffset*1.0+a_position[2]*1.5))*0.0001;
 	//Size based on zoom 
 	gl_PointSize = u_pixelSize * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
@@ -33,7 +33,7 @@ void main() {
 
 var isometricFragment = `#version 300 es
 
-precision lowp float;
+precision highp float;
 
 in vec2 v_texcoord;
 in float v_colorChange;

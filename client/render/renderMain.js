@@ -190,7 +190,7 @@ function render() {
 			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -2.0);
-			gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.5),
+			gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.7),
 			gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.scenery.position.length/3);
 		}

@@ -288,6 +288,12 @@ function block_get_texture(textureID){
 		case 7:
 			return([0.0,0.51])
 		break;
+		case 8:
+			return([0+58/342,0.51])
+		break;
+		case 9:
+			return([0+115/342,0.51])
+		break;
 	}
 }
 
