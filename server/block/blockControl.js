@@ -42,6 +42,7 @@ function chunk_create(x,y,z){
 		chunk[chunkID]={
 			coords : [x,y,z],
 			blockArray : new Uint8Array(Math.pow(blockSettings.chunk.XYZ,3)).fill(0),	
+			sceneryArray : [],
 		};
 	}
 }
@@ -74,5 +75,27 @@ z = Math.floor(i / ( 32 * 32 ))
 return([x,y,z]);
 }
 
+
+//Scenery
+scenery_change = function(x,y,z,change){
+	
+	var chunkPosition = chunk_get(Math.round(x),Math.round(x),z);
+	var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
+	var blockLocation = [(Math.round(x)) - (chunkPosition[0]*blockSettings.chunk.XYZ), (Math.round(x)) - (chunkPosition[1]*blockSettings.chunk.XYZ),(z) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
+	var blockIndex = blockLocation[0]+blockLocation[1]*blockSettings.chunk.XYZ+blockLocation[2]*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
+
+	if(chunk[chunkID]==null){
+	chunk_create(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
+	}
+	
+	if(chunk[chunkID].sceneryArray[blockIndex]==null){
+		chunk[chunkID].sceneryArray[blockIndex]=[];
+	}
+	
+
+	chunk[chunkID].sceneryArray[blockIndex].push([x-(chunkPosition[0]*blockSettings.chunk.XYZ),y-(chunkPosition[1]*blockSettings.chunk.XYZ),z-(chunkPosition[2]*blockSettings.chunk.XYZ),change]);	
+
+
+}
 
 

@@ -23,7 +23,7 @@ void main() {
 	gl_Position = vec4(0.0,0.0,0.0,0.5);
 	gl_Position.xy=  u_pixelMatrix* (a_position.xy-u_camera.xy) / u_screenSize;
 	gl_Position.y+=((-a_position[2]-u_camera[2]-u_pixelOffset)*14.5*u_resolution*u_zoom)/u_screenSize[1];
-	gl_Position[2] = (gl_Position[1]/u_zoom*100.0 +(u_pixelOffset*2.6)+ a_position[2]*3.0)*0.0001;
+	gl_Position[2] = ((gl_Position[1]/u_zoom*38.0) +(u_pixelOffset*0.8+a_position[2]*1.7))*0.0001;
 	//Size based on zoom 
 	gl_PointSize = u_pixelSize * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
@@ -41,17 +41,20 @@ in float v_colorChange;
 
 uniform sampler2D u_sampler;
 uniform vec2 u_textureResolution;
+uniform float u_doStep;
+uniform float u_alphaLimit;
+uniform float u_step;
 
 out vec4 outColor;
 
 void main() {
-	outColor = mix(texture(u_sampler,vec2((gl_PointCoord[0]*u_textureResolution[0] + v_texcoord[0]),gl_PointCoord[1]*u_textureResolution[1] +v_texcoord[1])),vec4(0.0,0.0,0.0,1.0),v_colorChange);
+	outColor = vec4(mix(texture(u_sampler,vec2((gl_PointCoord[0]*u_textureResolution[0] + v_texcoord[0]),gl_PointCoord[1]*u_textureResolution[1] +v_texcoord[1])).rgb,vec4(0.0,0.0,0.0,1.0).rgb,v_colorChange),texture(u_sampler,vec2((gl_PointCoord[0]*u_textureResolution[0] + v_texcoord[0]),gl_PointCoord[1]*u_textureResolution[1] +v_texcoord[1])).a);
 	//This fixes the fuzzy alpha and makes the texture not a square
 	//outColor.a =  outColor.a * step(0.999, outColor.a) - step(0.78,gl_PointCoord[1]);	
-	outColor.a -=  step(0.78,gl_PointCoord[1]);
+	outColor.a -=  step(0.78,gl_PointCoord[1])*u_step;
 	//Sadly I can not think of a way around this if check
 
-	if(outColor.a<1.0 || v_colorChange>=1.0){
+	if(outColor.a<u_alphaLimit || v_colorChange>=1.0 ){
 		discard;
 	}
 	
@@ -79,6 +82,9 @@ isometricShaderProgram = {
 		pixelSize : gl.getUniformLocation(isometricProgram,"u_pixelSize"),
 		textureResolution : gl.getUniformLocation(isometricProgram,"u_textureResolution"),
 		pixelOffset : gl.getUniformLocation(isometricProgram,"u_pixelOffset"),
+		alphaLimit : gl.getUniformLocation(isometricProgram,"u_alphaLimit"),
+		step : gl.getUniformLocation(isometricProgram,"u_step"),
+
 	},
 }
 

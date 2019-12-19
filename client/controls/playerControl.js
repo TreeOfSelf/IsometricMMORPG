@@ -28,7 +28,8 @@ window.addEventListener("mousedown", function(e){
 		if(playerControls.placing==0){
 			placing=1;
 		}else{
-			scenery_change(mapX,mapY,Math.round(-renderSettings.camera[2]),playerControls.blockType)
+			message_send_tcp(['scenery_change',mapX,mapY,Math.round(-renderSettings.camera[2]-1),playerControls.blockType]);
+			//scenery_change(mapX,mapY,Math.round(-renderSettings.camera[2]),playerControls.blockType)
 		}
 	}else{
 		deleting=1;
@@ -160,8 +161,8 @@ function playerControlFunction(){
 	if(placing==1){
 		
 		if(playerControls.placing==0){
-			//message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType]);
-			block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
+			message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType]);
+			//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
 		}
 	}
 	if(deleting==1){

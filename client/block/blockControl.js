@@ -323,7 +323,13 @@ function scenery_get_texture(textureID){
 			return([0.00,0]);
 		break;
 		case 2:
-			return([58/100,0]);
+			return([58/228,0]);
+		break;
+		case 3:
+			return([115/228,0]);
+		break;
+		case 4:
+			return([172/228,0]);
 		break;
 	}
 }

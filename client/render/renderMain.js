@@ -88,16 +88,20 @@ function render() {
 	gl.uniform3fv(isometricShaderProgram.uniforms.camera, renderSettings.camera);
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
 	if(playerControls.placing==0){
+		gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,1.0),
 		gl.uniform1f(isometricShaderProgram.uniforms.notSquare,1);
 		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.162,1.26*0.5]);
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, 0.0);
+		gl.uniform1f(isometricShaderProgram.uniforms.step, 1.0);
 		gl.bindTexture(gl.TEXTURE_2D, blockTexture);
 	}else{
+		gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.5),
 		gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
-		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
+		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);		
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -2.0);
+		gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 		gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
 	}
 	
@@ -125,15 +129,18 @@ function render() {
 	glMatrix.vec2.transformMat2(camVector,camVector,cursorMatrix);
 	mapX = (camVector[0]+renderSettings.camera[0]);
 	mapY = (camVector[1]+renderSettings.camera[1]);
-	if(playerControls.placing==0){
-		mapX=Math.round(mapX);
-		mapY=Math.round(mapY);
+	mapX=Math.round(mapX);
+	mapY=Math.round(mapY);
+	if(playerControls.placing==1){
+		mapZ=Math.round(-renderSettings.camera[2])-1;
+	}else{
+		mapZ=Math.round(-renderSettings.camera[2])
 	}
 	
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
-	[mapX,mapY,Math.round(-renderSettings.camera[2])]
+	[mapX,mapY,mapZ]
 	), gl.DYNAMIC_DRAW);
 	gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
@@ -171,6 +178,8 @@ function render() {
 			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.162,1.26*0.5]);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, 0.0);
+			gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,1.0),
+			gl.uniform1f(isometricShaderProgram.uniforms.step, 1.0)
 			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.block.position.length/3);
 		}
 	
@@ -178,9 +187,11 @@ function render() {
 			gl.bindVertexArray(chunk[chunkID].sceneryVAO);	
 			gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
 			gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
-			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
+			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -2.0);
+			gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.5),
+			gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.scenery.position.length/3);
 		}
 		

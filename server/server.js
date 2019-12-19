@@ -86,6 +86,15 @@ function message_receive(data,connectID){
 			block_change(data[1],data[2],data[3],data[4]);
 			message_send_tcp_all(['block_change',data[1],data[2],data[3],data[4]]);
 		break;
+		case "scenery_change":
+			data[1]+=Math.random()*0.45-Math.random()*0.45;
+			data[2]+=Math.random()*0.45-Math.random()*0.45;
+			scenery_change(data[1],data[2],data[3],data[4]);
+			message_send_tcp_all(['scenery_change',data[1],data[2],data[3],data[4]]);			
+		break;
+		case "player_position":
+			clients[connectID].position=[data[1],data[2],data[3]];
+		break;
 	}
 }
 
@@ -164,6 +173,23 @@ function message_send_udp_all(data,){
 }
 
 
+//Update tick
+setInterval(function(){
+	for(var k=0;k<activeClients.length;k++){
+		var clientID = activeClients[k];
+		if(clients[clientID].connected==1){
+			var chunkPosition = chunk_get(clients[clientID].position[0],clients[clientID].position[1],clients[clientID].position[2]);
+			var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
+			//If chunk is not loaded
+			if(clients[clientID].loaded.indexOf(chunkID)==-1 && chunk[chunkID]!=null){
+				clients[clientID].loaded.push(chunkID);
+				message_send_tcp(['map_load',JSON.stringify(chunkPosition),JSON.stringify(Array.prototype.slice.call(chunk[chunkID].blockArray)),JSON.stringify(chunk[chunkID].sceneryArray)],clientID);
+			}
+		}
+	}
+},100);
+
+
 //When we get a connection our webSocket connection
 wss.on('connection', function connection(ws) {
 		
@@ -175,6 +201,8 @@ wss.on('connection', function connection(ws) {
 		TCP : ws,
 		connected : 1,
 		elevation : 1,
+		loaded : [],
+		position : [0,0,0],
 	});
 	
 	ws.onclose = function(){
