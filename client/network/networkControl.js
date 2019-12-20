@@ -26,7 +26,7 @@
 //Update tick
 setInterval(function(){
 	message_send_udp(['player_position',mapX,mapY,renderSettings.camera[2]]);
-},100);
+},2000);
 
 
 
@@ -59,11 +59,17 @@ if(Array.isArray(data)==true){
 		case "scenery_change":
 			scenery_change(data[1],data[2],data[3],data[4]);
 		break;
+		case "scenery_delete":
+			
+			if(chunk[data[1]]!=null){
+				chunk[data[1]].sceneryArray[data[2]]=null;
+				chunk[data[1]].flags.reDrawScenery=1;
+			}
+		break;
 		case "map_load":
 			var mapCoords = JSON.parse(data[1]);
 			chunk_create(mapCoords[0],mapCoords[1],mapCoords[2]);
 			var chunkID = chunk_returnID(mapCoords[0],mapCoords[1],mapCoords[2]);
-			chunk[chunkID].blockArray = JSON.parse(data[2]);
 			chunk[chunkID].blockArray  = new Uint8Array( JSON.parse(data[2]) )
 			chunk[chunkID].sceneryArray = JSON.parse(data[3]);
 			chunk[chunkID].flags.reDrawBlock=1;

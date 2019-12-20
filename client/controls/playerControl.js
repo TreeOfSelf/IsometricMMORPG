@@ -7,6 +7,7 @@ playerControls = {
 	blockType : 1,
 	// 0 == block 1 == scenery
 	placing : 0,
+	position : [0,0,-1],
 }
 
 
@@ -28,7 +29,11 @@ window.addEventListener("mousedown", function(e){
 		if(playerControls.placing==0){
 			placing=1;
 		}else{
-			message_send_tcp(['scenery_change',mapX,mapY,Math.round(-renderSettings.camera[2]-1),playerControls.blockType]);
+			
+			if(block_check(mapX,mapY,mapZ)==0 && block_check(mapX,mapY,mapZ+1)==1 && block_check(mapX,mapY,mapZ-1)==0 ){
+				message_send_tcp(['scenery_change',mapX,mapY,mapZ,playerControls.blockType]);
+			}
+
 			//scenery_change(mapX,mapY,Math.round(-renderSettings.camera[2]),playerControls.blockType)
 		}
 	}else{

@@ -78,3 +78,4 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 var blockTexture = loadTexture('blockTexture.png');
 var sceneryTexture = loadTexture('sceneryTexture.png');
+var entityTexture = loadTexture('entityTexture.png');

@@ -1,6 +1,6 @@
 
 const blockControl = require('./block/blockControl.js');
-
+const fileSave = require('./file/fileSave.js');
 
 //Requires
 
@@ -36,9 +36,11 @@ myRL.on('line', function(line) {
 
 
 //List of users
-var clients = [];
+clients = [];
+
+
 //List of active users
-var activeClients = [];
+activeClients = [];
 
 //Start the websocket server
 /*
@@ -87,10 +89,14 @@ function message_receive(data,connectID){
 			message_send_tcp_all(['block_change',data[1],data[2],data[3],data[4]]);
 		break;
 		case "scenery_change":
-			data[1]+=Math.random()*0.3-Math.random()*0.3;
-			data[2]+=Math.random()*0.3-Math.random()*0.3;
-			scenery_change(data[1],data[2],data[3],data[4]);
-			message_send_tcp_all(['scenery_change',data[1],data[2],data[3],data[4]]);			
+			if(block_check(data[1],data[2],data[3])==0 && block_check(data[1],data[2],data[3]+1)==1 && block_check(data[1],data[2],data[3]-1)==0 ){
+			
+				data[1]+=Math.random()*0.3-Math.random()*0.3;
+				data[2]+=Math.random()*0.3-Math.random()*0.3;
+				scenery_change(data[1],data[2],data[3],data[4]);
+				message_send_tcp_all(['scenery_change',data[1],data[2],data[3],data[4]]);		
+
+			}			
 		break;
 		case "player_position":
 			clients[connectID].position=[data[1],data[2],data[3]];
@@ -100,7 +106,7 @@ function message_receive(data,connectID){
 
 
 
-function message_send(data,connectID){
+message_send = function(data,connectID){
 	
 	if(clients[connectID].connected==1){
 		
@@ -118,7 +124,7 @@ function message_send(data,connectID){
 	}
 }
 
-function message_send_all(data){
+message_send_all =function(data){
 	
 	for(var k=0 ;k<activeClients.length;k++){
 		var connectID = activeClients[k]
@@ -140,14 +146,14 @@ function message_send_all(data){
 }
 
 
-function message_send_tcp(data,connectID){
+message_send_tcp=function(data,connectID){
 	
 	if(clients[connectID].connected==1){
 		clients[connectID].TCP.send(JSON.stringify(data));			
 	}
 }
 
-function message_send_tcp_all(data,){
+ message_send_tcp_all=function(data){
 	for(var k=0 ;k<activeClients.length;k++){
 		var connectID = activeClients[k]
 		if(clients[connectID].connected==1){
@@ -156,14 +162,14 @@ function message_send_tcp_all(data,){
 	}
 }
 
-function message_send_udp(data,connectID){
+message_send_udp=function(data,connectID){
 	
 	if(clients[connectID].connected==1 && clients[connectID].elevation==2){
 		clients[connectID].UDP.send(JSON.stringify(data));			
 	}
 }
 
-function message_send_udp_all(data,){
+message_send_udp_all=function(data){
 	for(var k=0 ;k<activeClients.length;k++){
 		var connectID = activeClients[k]
 		if(clients[connectID].connected==1){
@@ -178,13 +184,20 @@ setInterval(function(){
 	for(var k=0;k<activeClients.length;k++){
 		var clientID = activeClients[k];
 		if(clients[clientID].connected==1){
-			var chunkPosition = chunk_get(clients[clientID].position[0],clients[clientID].position[1],clients[clientID].position[2]);
+
+			for(var xx=-1;xx<=1;xx++){					
+			for(var yy=-1;yy<=1;yy++){
+			for(var zz=-1;zz<=1;zz++){
+				
+			var chunkPosition = chunk_get(clients[clientID].position[0]+xx,clients[clientID].position[1]+yy,clients[clientID].position[2]+zz);			
 			var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
 			//If chunk is not loaded
 			if(clients[clientID].loaded.indexOf(chunkID)==-1 && chunk[chunkID]!=null){
 				clients[clientID].loaded.push(chunkID);
 				message_send_tcp(['map_load',JSON.stringify(chunkPosition),JSON.stringify(Array.prototype.slice.call(chunk[chunkID].blockArray)),JSON.stringify(chunk[chunkID].sceneryArray)],clientID);
 			}
+			
+			}}}
 		}
 	}
 },100);

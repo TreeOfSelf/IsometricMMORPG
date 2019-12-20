@@ -264,6 +264,22 @@ z = Math.floor(i / ( 32 * 32 ))
 return([x,y,z]);
 }
 
+function block_check(x,y,z){
+	var chunkPosition = chunk_get(x,y,z);
+	var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
+	var blockLocation = [(x) - (chunkPosition[0]*blockSettings.chunk.XYZ), (y) - (chunkPosition[1]*blockSettings.chunk.XYZ),(z) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
+	var blockIndex = blockLocation[0]+blockLocation[1]*blockSettings.chunk.XYZ+blockLocation[2]*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
+
+	if(chunk[chunkID]!=null){
+		if(chunk[chunkID].blockArray[blockIndex]!=0){
+			return(1);
+		}
+	}
+	return(0);
+	
+	
+}
+
 
 function block_get_texture(textureID){
 	switch(textureID){
@@ -301,10 +317,11 @@ function block_get_texture(textureID){
 //Scenery
 scenery_change = function(x,y,z,change){
 	
-	var chunkPosition = chunk_get(Math.round(x),Math.round(x),z);
+	var chunkPosition = chunk_get(Math.round(x),Math.round(y),Math.round(z));
 	var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
-	var blockLocation = [(Math.round(x)) - (chunkPosition[0]*blockSettings.chunk.XYZ), (Math.round(x)) - (chunkPosition[1]*blockSettings.chunk.XYZ),(z) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
+	var blockLocation = [(Math.round(x)) - (chunkPosition[0]*blockSettings.chunk.XYZ), (Math.round(y)) - (chunkPosition[1]*blockSettings.chunk.XYZ),(Math.round(z)) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
 	var blockIndex = blockLocation[0]+blockLocation[1]*blockSettings.chunk.XYZ+blockLocation[2]*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
+
 
 	if(chunk[chunkID]==null){
 	chunk_create(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
@@ -323,7 +340,7 @@ scenery_change = function(x,y,z,change){
 
 }
 
-function scenery_get_texture(textureID){
+scenery_get_texture = function(textureID){
 	switch(textureID){
 		case 1:
 			return([0.00,0]);
