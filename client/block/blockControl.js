@@ -272,7 +272,7 @@ function block_check(x,y,z){
 
 	if(chunk[chunkID]!=null){
 		if(chunk[chunkID].blockArray[blockIndex]!=0){
-			return(1);
+			return([x,y,z]);
 		}
 	}
 	return(0);

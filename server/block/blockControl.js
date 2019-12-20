@@ -87,7 +87,7 @@ block_check = function(x,y,z){
 
 	if(chunk[chunkID]!=null){
 		if(chunk[chunkID].blockArray[blockIndex]!=0){
-			return(1);
+			return([chunkID,x,y,z,blockIndex]);
 		}
 	}
 	return(0);

@@ -30,7 +30,7 @@ window.addEventListener("mousedown", function(e){
 			placing=1;
 		}else{
 			
-			if(block_check(mapX,mapY,mapZ)==0 && block_check(mapX,mapY,mapZ+1)==1 && block_check(mapX,mapY,mapZ-1)==0 ){
+			if(block_check(mapX,mapY,mapZ)==0 && block_check(mapX,mapY,mapZ+1)!=0 && block_check(mapX,mapY,mapZ-1)==0 ){
 				message_send_tcp(['scenery_change',mapX,mapY,mapZ,playerControls.blockType]);
 			}
 
@@ -104,32 +104,39 @@ window.addEventListener("keydown", function(e){
 			playerControls.placing=0;
 		}
 	}
-		
+	
+	if(e.key=='l' || e.key=='L'){
+		if(gravity==1){
+			gravity=0;
+		}else{
+			gravity=1;
+		}
+	}
 	
 	//Rotations (Sloppy)
-	if(e.key=='q' || e.key=='Q'){
+	if(e.key=='z' || e.key=='Z'){
 		renderSettings.blockRotationTarget=[-1,1,1,1];		
 	}
-	if(e.key=='w' || e.key=='W'){
+	if(e.key=='x' || e.key=='X'){
 		renderSettings.blockRotationTarget=[1,1,1,-1];
 	}
-	if(e.key=='e' || e.key=='E'){
+	if(e.key=='c' || e.key=='C'){
 		renderSettings.blockRotationTarget=[1,-1,-1,-1];
 	}
-	if(e.key=='r' || e.key=='R'){
+	if(e.key=='v' || e.key=='V'){
 		renderSettings.blockRotationTarget=[-1,-1,-1,1];
 	}
 	
-	if(e.key=='a' || e.key=='A'){
+	if(e.key=='b' || e.key=='B'){
 		renderSettings.blockRotationTarget=[-1,1,-1,-1];		
 	}
-	if(e.key=='s' || e.key=='S'){
+	if(e.key=='n' || e.key=='N'){
 		renderSettings.blockRotationTarget=[1,1,-1,1];		
 	}
-	if(e.key=='d' || e.key=='D'){
+	if(e.key=='m' || e.key=='M'){
 		renderSettings.blockRotationTarget=[1,-1,1,1];	
 	}
-	if(e.key=='f' || e.key=='F'){
+	if(e.key==',' || e.key=='<'){
 		renderSettings.blockRotationTarget=[-1,-1,1,-1];
 	}
 		
@@ -165,27 +172,91 @@ window.addEventListener("wheel", function(e){
 		renderSettings.zoom=16;
 	}
 });
-
+gravity=0;
+momentum=0;
 //Ran every frame to process controls
 function playerControlFunction(){
+	
+	if(gravity==1){
+		
+	var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),-Math.round(playerControls.position[2]))
+	if(gravityBlock!=0){
+		playerControls.position[2]=-gravityBlock[2]+1;
+	}
+		
+	var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),-Math.round(playerControls.position[2]-1))
+	if(gravityBlock!=0){
+		playerControls.position[2]=-gravityBlock[2]+1;
+	}else{
+		var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),-Math.round(playerControls.position[2]+1))
+		if(gravityBlock!=0){	
+			playerControls.position[2]=-gravityBlock[2]+1;
+		}else{		
+			playerControls.position[2]-= momentum+0.001;
+			momentum+=0.001;
+		}
+		}
+	}
+	
+	if(playerControls.position[2]<-15){
+		playerControls.position=[0,0,0]
+		momentum=0;
+	}
+	
+
+	//Move player
+	if(playerControls.keys['W']==1){
+		
+		var forwardVector = glMatrix.vec2.fromValues(0.0,0.5);
+		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
+		playerControls.position[0]+=forwardVector[0]*2.0
+		playerControls.position[1]+=forwardVector[1]*2.0
+	}
+	
+	if(playerControls.keys['S']==1){
+		
+		var forwardVector = glMatrix.vec2.fromValues(0.0,-0.5);
+		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
+		playerControls.position[0]+=forwardVector[0]*2.0
+		playerControls.position[1]+=forwardVector[1]*2.0
+	}
+	
+	if(playerControls.keys['D']==1){
+		
+		var forwardVector = glMatrix.vec2.fromValues(0.5,0.0);
+		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
+		playerControls.position[0]+=forwardVector[0]*2.0
+		playerControls.position[1]+=forwardVector[1]*2.0
+	}
+	
+	
+	if(playerControls.keys['A']==1){
+		
+		var forwardVector = glMatrix.vec2.fromValues(-0.5,0.0);
+		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
+		playerControls.position[0]+=forwardVector[0]*2.0
+		playerControls.position[1]+=forwardVector[1]*2.0
+	}
+	
+	
 	//Move camera
 	if(placing==1){
 		
 		if(playerControls.placing==0){
-			message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType]);
+			message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(mapZ),playerControls.blockType]);
 			//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
 		}
 	}
 	if(deleting==1){
-		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),0]);
+		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(mapZ),0]);
 	
 	}
 	
 	if(playerControls.keys['O']==1){
-		renderSettings.camera[2]+=0.1;
+		playerControls.position[2]+=0.1;
 	}
 	if(playerControls.keys['P']==1){
-		renderSettings.camera[2]-=0.1;
+		playerControls.position[2]-=0.1;
 	}
 	
 	if( (playerControls.mousePosition[0]/canvas.width > 0.8/renderSettings.resolution || playerControls.mousePosition[0]/canvas.width < 0.2*renderSettings.resolution || playerControls.mousePosition[1]/canvas.height > 0.8/renderSettings.resolution || playerControls.mousePosition[1]/canvas.height < 0.2*renderSettings.resolution) && placing==0 && deleting==0 ){	

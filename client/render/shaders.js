@@ -29,7 +29,7 @@ void main() {
 	//Size based on zoom 
 	gl_PointSize = u_pixelSize * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
-	v_colorChange = abs(-a_position[2]-u_camera[2])*0.1;
+	v_colorChange = abs(-a_position[2]-u_camera[2]+1.0)*0.2;
 	v_color = gl_Position[2];
 }
 `;
