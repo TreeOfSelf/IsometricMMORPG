@@ -59,6 +59,8 @@ gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, f
 gl.activeTexture(gl.TEXTURE0);
 gl.uniform1i(isometricShaderProgram.uniforms.sampler, 0);
 
+audioLevel=0;
+
 function render() {
 	
 	
@@ -75,10 +77,10 @@ function render() {
 
 	//Rotate blocks to target
 	renderSettings.blockRotation=[
-	renderSettings.blockRotation[0]+(renderSettings.blockRotationTarget[0]-renderSettings.blockRotation[0])*0.05,
-	renderSettings.blockRotation[1]+(renderSettings.blockRotationTarget[1]-renderSettings.blockRotation[1])*0.05,
-	renderSettings.blockRotation[2]+(renderSettings.blockRotationTarget[2]-renderSettings.blockRotation[2])*0.05,
-	renderSettings.blockRotation[3]+(renderSettings.blockRotationTarget[3]-renderSettings.blockRotation[3])*0.05];
+	renderSettings.blockRotation[0]+(renderSettings.blockRotationTarget[0]-renderSettings.blockRotation[0])*0.04,
+	renderSettings.blockRotation[1]+(renderSettings.blockRotationTarget[1]-renderSettings.blockRotation[1])*0.04,
+	renderSettings.blockRotation[2]+(renderSettings.blockRotationTarget[2]-renderSettings.blockRotation[2])*0.04,
+	renderSettings.blockRotation[3]+(renderSettings.blockRotationTarget[3]-renderSettings.blockRotation[3])*0.04];
 	
 	
 	
@@ -86,8 +88,8 @@ function render() {
 	gl.uniform2fv(isometricShaderProgram.uniforms.screenSize, renderSettings.screenSize);  // offset it to the right half the screen
 	gl.uniform1f(isometricShaderProgram.uniforms.zoom, renderSettings.zoom);
 	gl.uniform1f(isometricShaderProgram.uniforms.resolution, renderSettings.resolution);
-	
-	gl.uniform3fv(isometricShaderProgram.uniforms.camera, playerControls.position);
+	gl.uniform1f(isometricShaderProgram.uniforms.soundWave, Math.sin(audioLevel)*10.0);
+	gl.uniform3fv(isometricShaderProgram.uniforms.camera, [playerControls.position[0],playerControls.position[1],-playerControls.position[2]]);
 	
 	
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
@@ -138,10 +140,11 @@ function render() {
 	mapX=Math.round(mapX);
 	mapY=Math.round(mapY);
 	if(playerControls.placing==1){
-		mapZ=Math.round(-playerControls.position[2]);
+		mapZ=Math.round(playerControls.position[2]);
 	}else{
-		mapZ=Math.round(-playerControls.position[2]+1)
+		mapZ=Math.round(playerControls.position[2]+1)
 	}
+	
 	
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
@@ -210,31 +213,62 @@ function render() {
 		}
 		
 	}
+	
+	
+	var positionArray=[];
+	var textureArray=[];
+	
+	for(var k=0; k<activeEntity.length ; k++){
+		var entityID = activeEntity[k];
+
+		entity[entityID].drawPosition[0]+=(entity[entityID].position[0]-entity[entityID].drawPosition[0])*0.1;
+		entity[entityID].drawPosition[1]+=(entity[entityID].position[1]-entity[entityID].drawPosition[1])*0.1;	
+		entity[entityID].drawPosition[2]+=(entity[entityID].position[2]-entity[entityID].drawPosition[2])*0.1;		
+
+		var blockShadow = block_ray_down(Math.round(entity[entityID].drawPosition[0]),Math.round(entity[entityID].drawPosition[1]),Math.round(entity[entityID].drawPosition[2]));
+		
+		//Shadow hit
+		if(blockShadow!=0){
+				
+				positionArray.push(
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2],
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],blockShadow[2]-1-0.1
+				)
+				textureArray.push(
+				0,0,0.51,0,
+				)
+			}else{
+				positionArray.push(
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2],
+				)
+				textureArray.push(
+				0,0,
+				)	
+			}
+	}
+	
+	
 	gl.bindVertexArray(isometricVAO);
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
-	[playerControls.position[0],playerControls.position[1],-playerControls.position[2]]
-	), gl.DYNAMIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionArray), gl.DYNAMIC_DRAW);
 	gl.enableVertexAttribArray(isometricShaderProgram.attributes.position);
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.position, 3, gl.FLOAT, false, 0, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorTextureBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(
-	[0,0]
-	), gl.DYNAMIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureArray), gl.DYNAMIC_DRAW);
 	gl.enableVertexAttribArray(isometricShaderProgram.attributes.texture);
 	gl.vertexAttribPointer(isometricShaderProgram.attributes.texture, 2, gl.FLOAT, false, 0, 0);
 	
 
 	gl.bindTexture(gl.TEXTURE_2D, entityTexture);
 	gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
-			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[1,1]);
+			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
 	gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 45.0);
-	gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.3);
-	gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -2.0);
+	gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -0.9);
+	gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.2);
 	gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.7),
 	gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
-	gl.drawArrays(gl.POINTS, 0, 1 );
+	gl.drawArrays(gl.POINTS, 0, positionArray.length/3 );
 	
 	//Request next frame
 	requestAnimationFrame(render);

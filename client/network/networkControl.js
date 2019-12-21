@@ -25,12 +25,12 @@
 
 //Update tick
 setInterval(function(){
-	message_send_udp(['player_position',mapX,mapY,renderSettings.camera[2]]);
-},2000);
+	message_send_udp(['player_position',playerControls.position[0],playerControls.position[1],playerControls.position[2]]);
+},200);
 
 
 
-
+connectID=0;
 elevation=0;
 		
 //Reacts to certain packet types
@@ -46,6 +46,22 @@ if(Array.isArray(data)==true){
 	switch(switchValue){
 		case "connect_signal":
 			p.signal(JSON.parse(data[1]));	
+		break;
+		case "connect_id":
+			connectID = data[1];
+			entity_create(connectID);
+			entity[connectID].position = playerControls.position;
+			entity[connectID].drawPosition = playerControls.position;
+		break;
+		case "connect_player":
+			if(data[1]!=connectID){
+				entity_create(data[1]);
+				entity[data[1]].position=[data[2],data[3],data[4]];
+				entity[data[1]].drawPosition=[data[2],data[3],data[4]];
+			}
+		break;
+		case "connect_disconnect":
+			entity_remove(data[1]);
 		break;
 		case "connect_latency_tcp":
 			console.log('TCP latency: '+(Date.now()-pingTime)+'ms');
@@ -73,8 +89,12 @@ if(Array.isArray(data)==true){
 			chunk[chunkID].blockArray  = new Uint8Array( JSON.parse(data[2]) )
 			chunk[chunkID].sceneryArray = JSON.parse(data[3]);
 			chunk[chunkID].flags.reDrawBlock=1;
-			chunk[chunkID].flags.reDrawScenery=1;
-			 
+			chunk[chunkID].flags.reDrawScenery=1;			 
+		break;
+		case "player_move":
+			if(entity[data[1]]!=null && data[1]!=connectID){
+				entity[data[1]].position=[data[2],data[3],data[4]];
+			}
 		break;
 	}
 	

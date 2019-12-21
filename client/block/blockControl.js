@@ -272,11 +272,33 @@ function block_check(x,y,z){
 
 	if(chunk[chunkID]!=null){
 		if(chunk[chunkID].blockArray[blockIndex]!=0){
+			
 			return([x,y,z]);
 		}
 	}
 	return(0);
 	
+	
+}
+
+function block_ray_down(x,y,z){
+	
+	var hit=0;
+	var checkLimit = 10;
+	var zCheck = z+1;
+	while(hit==0 && checkLimit>0){
+		var blockHit  = block_check(x,y,zCheck);
+			if(blockHit!=0){
+				if(zCheck!=z+1){
+				return(blockHit);
+				}else{
+				return(0);
+				}
+			}
+		zCheck+=1;
+		checkLimit--;
+	}
+	return(0);
 	
 }
 

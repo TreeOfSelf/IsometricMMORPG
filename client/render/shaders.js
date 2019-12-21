@@ -14,6 +14,7 @@ uniform mat2 u_pixelMatrix;
 uniform float u_pixelSize;
 uniform float u_pixelOffset;
 uniform float u_pixelDepthOffset;
+uniform float u_soundWave;
 
 out vec2 v_texcoord;
 out float v_colorChange;
@@ -26,10 +27,11 @@ void main() {
 	gl_Position.xy=  u_pixelMatrix* (a_position.xy-u_camera.xy) / u_screenSize;
 	gl_Position.y+=((-a_position[2]-u_camera[2]-u_pixelOffset)*17.0*u_resolution*u_zoom)/u_screenSize[1];
 	gl_Position[2] = ((gl_Position[1]*1.5/u_zoom) +(a_position[2]*0.05+u_pixelDepthOffset*0.033))*0.001;
+	gl_Position.y+=((u_soundWave*sin((a_position[0]+u_camera[1]+u_soundWave*2.0)*0.1)*sin((a_position[1]+u_camera[1]+u_soundWave*2.0)*0.1))*3.0*u_resolution*u_zoom)/u_screenSize[1];
 	//Size based on zoom 
 	gl_PointSize = u_pixelSize * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
-	v_colorChange = abs(-a_position[2]-u_camera[2]+1.0)*0.2;
+	v_colorChange = abs(-a_position[2]-u_camera[2]+1.0)*0.05;
 	v_color = gl_Position[2];
 }
 `;
@@ -89,6 +91,7 @@ isometricShaderProgram = {
 		pixelDepthOffset : gl.getUniformLocation(isometricProgram,"u_pixelDepthOffset"),
 		alphaLimit : gl.getUniformLocation(isometricProgram,"u_alphaLimit"),
 		step : gl.getUniformLocation(isometricProgram,"u_step"),
+		soundWave : gl.getUniformLocation(isometricProgram,'u_soundWave'),
 
 	},
 }

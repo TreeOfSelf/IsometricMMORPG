@@ -1,6 +1,6 @@
 
 const blockControl = require('./block/blockControl.js');
-const fileSave = require('./file/fileSave.js');
+const fileControl = require('./file/fileControl.js');
 
 //Requires
 
@@ -60,6 +60,7 @@ function disconnectClient(clientID){
 	if(clientIndex!=-1){
 		activeClients.splice(clientIndex,1);
 	}
+	message_send_tcp_all(['connect_disconnect',clientID]);
 	console.log(('Disconnected: '+clientID).brightRed);	
 }
 
@@ -100,6 +101,7 @@ function message_receive(data,connectID){
 		break;
 		case "player_position":
 			clients[connectID].position=[data[1],data[2],data[3]];
+			message_send_udp_all(['player_move',connectID,data[1],data[2],data[3]]);
 		break;
 	}
 }
@@ -185,9 +187,9 @@ setInterval(function(){
 		var clientID = activeClients[k];
 		if(clients[clientID].connected==1){
 
-			for(var xx=-1;xx<=1;xx++){					
-			for(var yy=-1;yy<=1;yy++){
-			for(var zz=-1;zz<=1;zz++){
+			for(var xx=-6;xx<=6;xx++){					
+			for(var yy=-6;yy<=6;yy++){
+			for(var zz=-6;zz<=6;zz++){
 				
 			var chunkPosition = chunk_get(clients[clientID].position[0]+xx,clients[clientID].position[1]+yy,clients[clientID].position[2]+zz);			
 			var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
@@ -217,6 +219,15 @@ wss.on('connection', function connection(ws) {
 		loaded : [],
 		position : [0,0,0],
 	});
+	
+	message_send_tcp(['connect_id',connectID],connectID);
+	
+	message_send_tcp_all(['connect_player',connectID,0,0,0]);
+	
+	for(var k=0; k<activeClients.length; k++){
+		var id = activeClients[k];
+		message_send_tcp(['connect_player',id,clients[k].position[0],clients[k].position[1],clients[k].position[2]],connectID);
+	}
 	
 	ws.onclose = function(){
 		disconnectClient(connectID);

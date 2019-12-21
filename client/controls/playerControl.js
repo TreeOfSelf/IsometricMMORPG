@@ -31,7 +31,8 @@ window.addEventListener("mousedown", function(e){
 		}else{
 			
 			if(block_check(mapX,mapY,mapZ)==0 && block_check(mapX,mapY,mapZ+1)!=0 && block_check(mapX,mapY,mapZ-1)==0 ){
-				message_send_tcp(['scenery_change',mapX,mapY,mapZ,playerControls.blockType]);
+				//message_send_tcp(['scenery_change',mapX,mapY,mapZ,playerControls.blockType]);
+				scenery_change(mapX,mapY,mapZ,playerControls.blockType);
 			}
 
 			//scenery_change(mapX,mapY,Math.round(-renderSettings.camera[2]),playerControls.blockType)
@@ -51,8 +52,8 @@ window.addEventListener("mouseup", function(e){
 	}
 });
 
-window.addEventListener("mousemove", function(e){
 	
+window.addEventListener("mousemove", function(e){
    var rect = canvas.getBoundingClientRect();
    playerControls.mousePosition[0] =  e.pageX - rect.left;
    playerControls.mousePosition[1] = e.pageY - rect.top;
@@ -67,7 +68,41 @@ window.addEventListener("keydown", function(e){
 	if(e.key=='Enter'){
 		canvas.requestFullscreen();
 	}
+	if(e.key=='I' || e.key=='i'){
+
+		  var audioCtx = new AudioContext();
+		  var url = './juicewrld.mp3';
+		  var audio = new Audio(url);
+		  var processor = audioCtx.createScriptProcessor(2048, 1, 1);
+		  var meter = document.getElementById('meter');
+		  var source;
+
+		  audio.addEventListener('canplaythrough', function(){
+			source = audioCtx.createMediaElementSource(audio);
+			source.connect(processor);
+			source.connect(audioCtx.destination);
+			processor.connect(audioCtx.destination);
+			audio.play();
+		  }, false);
+
+		  // loop through PCM data and calculate average
+		  // volume for a given 2048 sample buffer
+		  processor.onaudioprocess = function(evt){
+			var input = evt.inputBuffer.getChannelData(0)
+			  , len = input.length   
+			  , total = i = 0
+			  , rms;
+			while ( i < len ) total += Math.abs( input[i++] );
+			rms = Math.sqrt( total / len );
+			audioLevel+=Math.pow(( rms * 100 ),2)*0.0001;
+			
+		  };
+
+
+
+	}
 	
+
 	
 	if(e.key=='1'){
 		playerControls.blockType=1;
@@ -97,7 +132,7 @@ window.addEventListener("keydown", function(e){
 		playerControls.blockType=9;
 	}		
 	
-	if(e.key=='M' || e.key=='m'){
+	if(e.key=='G' || e.key=='g'){
 		if(playerControls.placing==0){
 			playerControls.placing=1;
 		}else{
@@ -174,59 +209,110 @@ window.addEventListener("wheel", function(e){
 });
 gravity=0;
 momentum=0;
+solid=0;
+movementSpeed=3.5;
+movementSpeedCheck=15.0;
 //Ran every frame to process controls
 function playerControlFunction(){
-	
-	if(gravity==1){
-		
-	var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),-Math.round(playerControls.position[2]))
-	if(gravityBlock!=0){
-		playerControls.position[2]=-gravityBlock[2]+1;
-	}
-		
-	var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),-Math.round(playerControls.position[2]-1))
-	if(gravityBlock!=0){
-		playerControls.position[2]=-gravityBlock[2]+1;
-	}else{
-		var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),-Math.round(playerControls.position[2]+1))
-		if(gravityBlock!=0){	
-			playerControls.position[2]=-gravityBlock[2]+1;
-		}else{		
-			playerControls.position[2]-= momentum+0.001;
-			momentum+=0.001;
-		}
-		}
-	}
-	
-	if(playerControls.position[2]<-15){
-		playerControls.position=[0,0,0]
-		momentum=0;
-	}
-	
 
+	solid=0;
+	momentum*=0.9;
+	if(gravity==1){
+		var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]))
+		if(  gravityBlock!=0 && Math.round(playerControls.position[2]-1)<gravityBlock[2] && block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))==0){
+			playerControls.position[2]-=0.1;
+			solid=1;
+			momentum=0;
+
+		}else{
+			
+		var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]+1))
+		if(gravityBlock!=0 &&  block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]))==0){
+			playerControls.position[2]=gravityBlock[2]-1;
+			solid=1;
+			momentum=0;
+		}
+		}
+	if(solid==0){	
+	
+		var hitBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-0.9+momentum+0.2))
+		if(hitBlock==0){
+			playerControls.position[2]+= momentum+0.2;
+			momentum+=0.0001;
+		}else{
+			momentum=0;
+		}
+	}
+		
+	}
+
+	
+	if(playerControls.position[2]>15){
+		playerControls.position=[0,0,0]
+	}
+	
+	if(playerControls.keys[' ']==1){
+		if(solid==1 &&  block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-3.0))==0){
+			
+			solid=0;
+			momentum=-0.6;
+			playerControls.position[2]-=0.7;
+		}
+	}
 	//Move player
 	if(playerControls.keys['W']==1){
 		
 		var forwardVector = glMatrix.vec2.fromValues(0.0,0.5);
 		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
-		playerControls.position[0]+=forwardVector[0]*2.0
-		playerControls.position[1]+=forwardVector[1]*2.0
+		
+		var blockInfront = block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeedCheck),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		blockInfront+=block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeed),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		if(blockInfront==0){
+			playerControls.position[0]+=forwardVector[0]*movementSpeed			
+		}
+		var blockInfront = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeedCheck),Math.round(playerControls.position[2]-1))
+		blockInfront += block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeed),Math.round(playerControls.position[2]-1))
+		
+		if(blockInfront==0){
+			playerControls.position[1]+=forwardVector[1]*movementSpeed			
+		}			
+		
 	}
 	
 	if(playerControls.keys['S']==1){
 		
 		var forwardVector = glMatrix.vec2.fromValues(0.0,-0.5);
 		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
-		playerControls.position[0]+=forwardVector[0]*2.0
-		playerControls.position[1]+=forwardVector[1]*2.0
+
+		var blockInfront = block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeedCheck),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		blockInfront+=block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeed),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		if(blockInfront==0){
+			playerControls.position[0]+=forwardVector[0]*movementSpeed			
+		}
+		var blockInfront = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeedCheck),Math.round(playerControls.position[2]-1))
+		blockInfront += block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeed),Math.round(playerControls.position[2]-1))
+		
+		if(blockInfront==0){
+			playerControls.position[1]+=forwardVector[1]*movementSpeed			
+		}
 	}
 	
 	if(playerControls.keys['D']==1){
 		
 		var forwardVector = glMatrix.vec2.fromValues(0.5,0.0);
 		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
-		playerControls.position[0]+=forwardVector[0]*2.0
-		playerControls.position[1]+=forwardVector[1]*2.0
+
+		var blockInfront = block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeedCheck),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		blockInfront+=block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeed),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		if(blockInfront==0){
+			playerControls.position[0]+=forwardVector[0]*movementSpeed			
+		}
+		var blockInfront = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeedCheck),Math.round(playerControls.position[2]-1))
+		blockInfront += block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeed),Math.round(playerControls.position[2]-1))
+		
+		if(blockInfront==0){
+			playerControls.position[1]+=forwardVector[1]*movementSpeed			
+		}	
 	}
 	
 	
@@ -234,8 +320,18 @@ function playerControlFunction(){
 		
 		var forwardVector = glMatrix.vec2.fromValues(-0.5,0.0);
 		glMatrix.vec2.transformMat2(forwardVector,forwardVector,cursorMatrix);
-		playerControls.position[0]+=forwardVector[0]*2.0
-		playerControls.position[1]+=forwardVector[1]*2.0
+
+		var blockInfront = block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeedCheck),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		blockInfront+=block_check(Math.round(playerControls.position[0]+forwardVector[0]*movementSpeed),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))
+		if(blockInfront==0){
+			playerControls.position[0]+=forwardVector[0]*movementSpeed			
+		}
+		var blockInfront = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeedCheck),Math.round(playerControls.position[2]-1))
+		blockInfront += block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]+forwardVector[1]*movementSpeed),Math.round(playerControls.position[2]-1))
+		
+		if(blockInfront==0){
+			playerControls.position[1]+=forwardVector[1]*movementSpeed			
+		}
 	}
 	
 	
@@ -244,19 +340,20 @@ function playerControlFunction(){
 		
 		if(playerControls.placing==0){
 			message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(mapZ),playerControls.blockType]);
-			//block_change(Math.round(mapX),Math.round(mapY),Math.round(-renderSettings.camera[2]),playerControls.blockType);
+			block_change(Math.round(mapX),Math.round(mapY),Math.round(mapZ),playerControls.blockType);
 		}
 	}
 	if(deleting==1){
+		
 		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(mapZ),0]);
-	
+		block_change(Math.round(mapX),Math.round(mapY),Math.round(mapZ),0);
 	}
 	
 	if(playerControls.keys['O']==1){
-		playerControls.position[2]+=0.1;
+		playerControls.position[2]-=0.1;
 	}
 	if(playerControls.keys['P']==1){
-		playerControls.position[2]-=0.1;
+		playerControls.position[2]+=0.1;
 	}
 	
 	if( (playerControls.mousePosition[0]/canvas.width > 0.8/renderSettings.resolution || playerControls.mousePosition[0]/canvas.width < 0.2*renderSettings.resolution || playerControls.mousePosition[1]/canvas.height > 0.8/renderSettings.resolution || playerControls.mousePosition[1]/canvas.height < 0.2*renderSettings.resolution) && placing==0 && deleting==0 ){	
