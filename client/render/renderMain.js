@@ -108,7 +108,7 @@ function render() {
 		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);		
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.5);
-		gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -2.0);
+		gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.1);
 		gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 		gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
 	}
@@ -173,10 +173,22 @@ function render() {
 			gl.drawArrays(gl.POINTS,0,1);
 		}
 	}
-
+	var chunkList = [];
 	
-	for(var i=0;i<activeChunks.length;i++){
-		var chunkID = activeChunks[i];
+	for(var xx=-5;xx<=5;xx++){
+	for(var yy=-5;yy<=5;yy++){	
+	for(var zz=-5;zz<=5;zz++){
+		var chunkPos = chunk_get(playerControls.position[0]+xx*blockSettings.chunk.XYZ,playerControls.position[1]+yy*blockSettings.chunk.XYZ,playerControls.position[2]+zz*blockSettings.chunk.XYZ);
+		var chunkID = chunk_returnID(chunkPos[0],chunkPos[1],chunkPos[2]);
+		if(chunk[chunkID]!=null){
+			chunkList.push(chunkID);
+		}
+	}
+	}
+	}
+		
+	for(var i=0;i<chunkList.length;i++){
+		var chunkID = chunkList[i];
 		if(chunk[chunkID].flags.reDrawBlock==1){
 			chunk[chunkID].flags.reDrawBlock=0;
 			chunk_draw_block(chunkID);
@@ -205,7 +217,7 @@ function render() {
 			gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
 			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
-			gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -2.0);
+			gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.3);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.5);
 			gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.7),
 			gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
@@ -231,15 +243,15 @@ function render() {
 		if(blockShadow!=0){
 				
 				positionArray.push(
-				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2],
-				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],blockShadow[2]-1-0.1
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.1,
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],blockShadow[2]-1-0.25
 				)
 				textureArray.push(
 				0,0,0.51,0,
 				)
 			}else{
 				positionArray.push(
-				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2],
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.1,
 				)
 				textureArray.push(
 				0,0,
@@ -265,7 +277,7 @@ function render() {
 			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
 	gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 45.0);
 	gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -0.9);
-	gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.2);
+	gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.0);
 	gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.7),
 	gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 	gl.drawArrays(gl.POINTS, 0, positionArray.length/3 );

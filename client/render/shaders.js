@@ -26,12 +26,18 @@ void main() {
 	gl_Position = vec4(0.0,0.0,0.0,0.5);
 	gl_Position.xy=  u_pixelMatrix* (a_position.xy-u_camera.xy) / u_screenSize;
 	gl_Position.y+=((-a_position[2]-u_camera[2]-u_pixelOffset)*17.0*u_resolution*u_zoom)/u_screenSize[1];
-	gl_Position[2] = ((gl_Position[1]*1.5/u_zoom) +(a_position[2]*0.05+u_pixelDepthOffset*0.033))*0.001;
+	
+	//gl_Position[2] = ((gl_Position[1]*1.5) +(a_position[2]/u_screenSize[1]*25.6+u_pixelDepthOffset*0.033))*0.001; //33
+	
+	gl_Position[2] = (gl_Position[1]*5.0*u_screenSize[1] + a_position[2]*100.0 + u_pixelDepthOffset*110.0)/u_zoom*0.000001;
+	
 	gl_Position.y+=((u_soundWave*sin((a_position[0]+u_camera[1]+u_soundWave*2.0)*0.1)*sin((a_position[1]+u_camera[1]+u_soundWave*2.0)*0.1))*3.0*u_resolution*u_zoom)/u_screenSize[1];
 	//Size based on zoom 
 	gl_PointSize = u_pixelSize * min(1.0,u_zoom);
 	v_texcoord = a_texcoord;
-	v_colorChange = abs(-a_position[2]-u_camera[2]+1.0)*0.05;
+	v_colorChange = abs(-a_position[2]-u_camera[2]+1.0)*0.1;
+	
+	
 	v_color = gl_Position[2];
 }
 `;

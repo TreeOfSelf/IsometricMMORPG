@@ -31,8 +31,8 @@ window.addEventListener("mousedown", function(e){
 		}else{
 			
 			if(block_check(mapX,mapY,mapZ)==0 && block_check(mapX,mapY,mapZ+1)!=0 && block_check(mapX,mapY,mapZ-1)==0 ){
-				//message_send_tcp(['scenery_change',mapX,mapY,mapZ,playerControls.blockType]);
-				scenery_change(mapX,mapY,mapZ,playerControls.blockType);
+				message_send_tcp(['scenery_change',mapX,mapY,mapZ,playerControls.blockType]);
+				//scenery_change(mapX,mapY,mapZ,playerControls.blockType);
 			}
 
 			//scenery_change(mapX,mapY,Math.round(-renderSettings.camera[2]),playerControls.blockType)
@@ -210,24 +210,26 @@ window.addEventListener("wheel", function(e){
 gravity=0;
 momentum=0;
 solid=0;
-movementSpeed=3.5;
-movementSpeedCheck=15.0;
+movementSpeed=3.0;
+movementSpeedCheck=30.0;
 //Ran every frame to process controls
 function playerControlFunction(){
-
+	if(entity[connectID]!=null){
+		entity[connectID].position=playerControls.position;
+	}
 	solid=0;
 	momentum*=0.9;
 	if(gravity==1){
 		var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]))
-		if(  gravityBlock!=0 && Math.round(playerControls.position[2]-1)<gravityBlock[2] && block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))==0){
-			playerControls.position[2]-=0.1;
+		if(  gravityBlock!=0 && Math.floor(playerControls.position[2]-1)<gravityBlock[2] && block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))==0 &&  block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-2))==0){
+			playerControls.position[2]-=0.06;
 			solid=1;
 			momentum=0;
 
 		}else{
 			
 		var gravityBlock = block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]+1))
-		if(gravityBlock!=0 &&  block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]))==0){
+		if(gravityBlock!=0 &&  block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]))==0 &&  block_check(Math.round(playerControls.position[0]),Math.round(playerControls.position[1]),Math.round(playerControls.position[2]-1))==0){
 			playerControls.position[2]=gravityBlock[2]-1;
 			solid=1;
 			momentum=0;
@@ -248,7 +250,7 @@ function playerControlFunction(){
 
 	
 	if(playerControls.position[2]>15){
-		playerControls.position=[0,0,0]
+		playerControls.position=[0,0,0];
 	}
 	
 	if(playerControls.keys[' ']==1){
@@ -312,7 +314,7 @@ function playerControlFunction(){
 		
 		if(blockInfront==0){
 			playerControls.position[1]+=forwardVector[1]*movementSpeed			
-		}	
+		}
 	}
 	
 	
