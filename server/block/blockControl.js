@@ -2,7 +2,7 @@ var module=global.noise={};function Grad(r,e,d){this.x=r,this.y=e,this.z=d}Grad.
 
 blockSettings = {
 	chunk : {
-		space : 64,
+		space : 1024,
 		XYZ : 16,
 	},	
 	sector : {

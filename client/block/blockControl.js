@@ -27,7 +27,7 @@ blockDraw.onmessage = function(e) {
 
 var blockSettings = {
 	chunk : {
-		space : 64,
+		space : 1024,
 		XYZ : 16,
 	},	
 	sector : {
@@ -381,13 +381,13 @@ scenery_get_texture = function(textureID){
 			return([0.00,0]);
 		break;
 		case 2:
-			return([58/228,0]);
+			return([58/342,0]);
 		break;
 		case 3:
-			return([115/228,0]);
+			return([115/342,0]);
 		break;
 		case 4:
-			return([172/228,0]);
+			return([172/342,0]);
 		break;
 	}
 }

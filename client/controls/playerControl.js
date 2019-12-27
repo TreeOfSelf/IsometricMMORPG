@@ -342,13 +342,13 @@ function playerControlFunction(){
 		
 		if(playerControls.placing==0){
 			message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(mapZ),playerControls.blockType]);
-			block_change(Math.round(mapX),Math.round(mapY),Math.round(mapZ),playerControls.blockType);
+			//block_change(Math.round(mapX),Math.round(mapY),Math.round(mapZ),playerControls.blockType);
 		}
 	}
 	if(deleting==1){
 		
 		message_send_tcp(['block_change',Math.round(mapX),Math.round(mapY),Math.round(mapZ),0]);
-		block_change(Math.round(mapX),Math.round(mapY),Math.round(mapZ),0);
+		//block_change(Math.round(mapX),Math.round(mapY),Math.round(mapZ),0);
 	}
 	
 	if(playerControls.keys['O']==1){

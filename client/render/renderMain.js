@@ -105,9 +105,9 @@ function render() {
 	}else{
 		gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.5),
 		gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
-		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
+		gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.163,0.5]);
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);		
-		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.5);
+		gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.0);
 		gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.1);
 		gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 		gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
@@ -215,10 +215,10 @@ function render() {
 			gl.bindVertexArray(chunk[chunkID].sceneryVAO);	
 			gl.bindTexture(gl.TEXTURE_2D, sceneryTexture);
 			gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
-			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
+			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.166,0.5]);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 57.0);
 			gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.3);
-			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.5);
+			gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -1.0);
 			gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.7),
 			gl.uniform1f(isometricShaderProgram.uniforms.step, 0.0)
 			gl.drawArrays(gl.POINTS, 0, chunk[chunkID].drawData.scenery.position.length/3);
@@ -243,7 +243,7 @@ function render() {
 		if(blockShadow!=0){
 				
 				positionArray.push(
-				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.1,
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.22,
 				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],blockShadow[2]-1-0.25
 				)
 				textureArray.push(
@@ -251,7 +251,7 @@ function render() {
 				)
 			}else{
 				positionArray.push(
-				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.1,
+				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.22,
 				)
 				textureArray.push(
 				0,0,
