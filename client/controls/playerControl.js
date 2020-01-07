@@ -71,7 +71,7 @@ window.addEventListener("keydown", function(e){
 	if(e.key=='I' || e.key=='i'){
 
 		  var audioCtx = new AudioContext();
-		  var url = './juicewrld.mp3';
+		  var url = './edison.mp3';
 		  var audio = new Audio(url);
 		  var processor = audioCtx.createScriptProcessor(2048, 1, 1);
 		  var meter = document.getElementById('meter');
@@ -217,6 +217,27 @@ function playerControlFunction(){
 	if(entity[connectID]!=null){
 		entity[connectID].position=playerControls.position;
 	}
+	
+	
+	if(playerControls.keys['-'] || playerControls.keys['_']){
+		
+		renderSettings.viewUp-=0.1;
+		if(renderSettings.viewUp<0){
+			renderSettings.viewUp=0;
+		}
+
+	}
+
+	if(playerControls.keys['='] || playerControls.keys['+']){
+		
+		renderSettings.viewUp+=0.1;
+		if(renderSettings.viewUp>12){
+			renderSettings.viewUp=12;
+		}
+
+	}	
+
+
 	solid=0;
 	momentum*=0.9;
 	if(gravity==1){

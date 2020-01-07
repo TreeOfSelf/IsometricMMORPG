@@ -7,7 +7,6 @@ blockSettings = {
 	},	
 	sector : {
 		space : 32,
-		XYZ : 4,
 	},
 	//Determines how far out to process chunks
 	processDistance : {
@@ -45,11 +44,72 @@ chunk_create = function(x,y,z){
 			coords : [x,y,z],
 			blockArray : new Uint8Array(Math.pow(blockSettings.chunk.XYZ,3)).fill(0),	
 			sceneryArray : [],
+			nodes : [],
 		};
+	
+	
+
+	}
+	
+	
+	
+}
+
+chunk_resetNodes = function(id){
+	chunk[id].nodes=[];
+	for(var xx=0 ;xx<blockSettings.chunk.XYZ; xx++){
+	for(var yy=0 ;yy<blockSettings.chunk.XYZ; yy++){
+	for(var zz=0 ;zz<blockSettings.chunk.XYZ; zz++){
+		var blockIndex = xx+yy*blockSettings.chunk.XYZ+zz*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
+		var coords = [xx+chunk[id].coords[0]*blockSettings.chunk.XYZ,yy+chunk[id].coords[1]*blockSettings.chunk.XYZ,zz+chunk[id].coords[2]*blockSettings.chunk.XYZ];
+		chunk[id].nodes[blockIndex]=new PF.Node(coords[0],coords[1],coords[2]);
+		
+	}
+	}
+	}
+	
+	
+}
+
+chunk_pathfind = function(id){
+
+	
+	for(var xx=0 ;xx<blockSettings.chunk.XYZ; xx++){
+	for(var yy=0 ;yy<blockSettings.chunk.XYZ; yy++){
+	for(var zz=0 ;zz<blockSettings.chunk.XYZ; zz++){
+		var blockIndex = xx+yy*blockSettings.chunk.XYZ+zz*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
+		var coords = [xx+chunk[id].coords[0]*blockSettings.chunk.XYZ,yy+chunk[id].coords[1]*blockSettings.chunk.XYZ,zz+chunk[id].coords[2]*blockSettings.chunk.XYZ];
+		if(block_check(coords[0],coords[1],coords[2]-1)==0 && block_check(coords[0],coords[1],coords[2]-2)==0){
+			chunk[id].nodes[blockIndex].neighbors=[];
+			for(var xxx=-1;xxx<=1;xxx++){
+			for(var yyy=-1;yyy<=1;yyy++){
+			for(var zzz=-1;zzz<=1;zzz++){
+				if(xxx != 0 || yyy != 0 || zzz!= 0){
+					if(block_check(coords[0]+xxx,coords[1]+yyy,coords[2]+zzz)!=0 && block_check(coords[0]+xxx,coords[1]+yyy,coords[2]+zzz-1)==0 && block_check(coords[0]+xxx,coords[1]+yyy,coords[2]+zzz-1)==0){
+						var node = block_get_node(xxx+coords[0],yyy+coords[1],zzz+coords[2]);
+						if(node!=null){
+							chunk[id].nodes[blockIndex].neighbors.push(node);
+						}
+					}
+				}
+			}
+			}
+			}
+			
+		}
+			
+		
+	}
+	}
 	}
 }
 
+
 //Block
+
+
+
+
 
 
 chunk_generate = function(x,y,z){
@@ -108,6 +168,87 @@ for(var zz=0 ;zz<blockSettings.chunk.XYZ; zz++){
 
 }
 
+function distance_3d( v1, v2 )
+{
+    var dx = v1[0] - v2[0];
+    var dy = v1[1] - v2[1];
+    var dz = v1[2] - v2[2];
+
+    return Math.sqrt( dx * dx + dy * dy + dz * dz );
+}
+
+
+block_pathfind = function(blockStart,blockEnd){
+	console.time();
+	var chunkPosition = chunk_get(blockStart[0],blockStart[1],blockStart[2]);
+	var chunkPositionTwo = chunk_get(blockEnd[0],blockEnd[1],blockEnd[2]);
+	var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
+	var chunkIDTwo = chunk_returnID(chunkPositionTwo[0],chunkPositionTwo[1],chunkPositionTwo[2]);
+	if(chunk[chunkID]!=null && chunk[chunkIDTwo]!=null){
+		
+		//Same chunk
+		if(chunkID == chunkIDTwo){
+			
+			pathChild.send({
+				id : 'chunk_pathfind',
+				chunkList : [[chunkID,chunk[chunkID].blockArray,chunk[chunkID].coords]],
+				blockStart : blockStart,
+				blockEnd : blockEnd,
+				
+			});
+			
+
+		}else{
+			var chunkList=[];		
+			var dist = Math.ceil(distance_3d(chunkPosition,chunkPositionTwo)*1.2);
+
+			for(var xxx =-dist ; xxx<=dist; xxx++){
+			for(var yyy =-dist ; yyy<=dist; yyy++){		
+			for(var zzz =-dist ; zzz<=dist; zzz++){
+								
+				
+				
+				var chunkPos = chunk_get(blockStart[0],blockStart[1],blockStart[2]);
+				var id = chunk_returnID(chunkPos[0]+xxx,chunkPos[1]+yyy,chunkPos[2]+zzz);			
+				if(chunk[id]!=null){
+					chunkList.push([id,chunk[id].blockArray,chunk[id].coords]);
+
+				}
+			
+			}
+			}
+			}
+
+
+
+			pathChild.send({
+				id : 'chunk_pathfind',
+				chunkList : chunkList,
+				blockStart : blockStart,
+				blockEnd : blockEnd,
+				
+			});							
+
+
+				
+		}
+	}
+	console.timeEnd();
+}
+
+block_get_node = function(x,y,z){
+	var chunkPosition = chunk_get(x,y,z);
+	var chunkID = chunk_returnID(chunkPosition[0],chunkPosition[1],chunkPosition[2]);
+	var blockLocation = [(x) - (chunkPosition[0]*blockSettings.chunk.XYZ), (y) - (chunkPosition[1]*blockSettings.chunk.XYZ),(z) - (chunkPosition[2]*blockSettings.chunk.XYZ)]
+	var blockIndex = blockLocation[0]+blockLocation[1]*blockSettings.chunk.XYZ+blockLocation[2]*blockSettings.chunk.XYZ*blockSettings.chunk.XYZ;
+
+	if(chunk[chunkID]!=null){
+		return(chunk[chunkID].nodes[blockIndex]);
+	}
+			
+}
+
+
 block_change = function(x,y,z,change){
 	
 	var chunkPosition = chunk_get(x,y,z);
@@ -121,6 +262,8 @@ block_change = function(x,y,z,change){
 	
 
 	chunk[chunkID].blockArray[blockIndex]=change;
+	
+	
 	scenery_delete(x,y,z);
 	scenery_delete(x,y,z+1);
 	

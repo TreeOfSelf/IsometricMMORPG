@@ -1,6 +1,24 @@
 
-const blockControl = require('./block/blockControl.js');
-const fileControl = require('./file/fileControl.js');
+blockControl = require('./block/blockControl.js');
+fileControl = require('./file/fileControl.js');
+ntityControl = require('./entity/entityControl.js');
+entityNPC = require('./entity/entityNPC.js');
+PF = require('./utils/utilPathfinding.js');
+
+
+const { fork } = require('child_process');
+
+pathChild = fork('./pathChild.js');
+
+pathChild.on('message', (msg) => {
+  console.log('Message from child', msg);
+});
+
+pathChild.send({
+	id : 'blockSettings',
+	blockSettings : blockSettings,
+});
+
 
 
 //Requires
@@ -43,6 +61,11 @@ myRL.on('line', function(line) {
 //List of users
 clients = [];
 
+entity = [];
+activeEntity = [];
+
+NPC = [];
+activeNPC = [];
 
 //List of active users
 activeClients = [];
@@ -60,6 +83,7 @@ const wss = new WebSocket.Server({
 function disconnectClient(clientID){
 	clients[clientID].connected=0;
 	clients[clientID].elevation=0;
+	entity_remove(clientID);
 	//Remove from our active clients list if it is present in it
 	var clientIndex = activeClients.indexOf(clientID);
 	if(clientIndex!=-1){
@@ -106,6 +130,7 @@ function message_receive(data,connectID){
 		break;
 		case "player_position":
 			clients[connectID].position=[data[1],data[2],data[3]];
+			entity[connectID].position=[data[1],data[2],data[3]];
 			message_send_udp_all(['player_move',connectID,data[1],data[2],data[3]]);
 		break;
 	}
@@ -231,13 +256,15 @@ wss.on('connection', function connection(ws) {
 		position : [0,0,0],
 	});
 	
+	entity_create(connectID,0);
+	
 	message_send_tcp(['connect_id',connectID],connectID);
 	
-	message_send_tcp_all(['connect_player',connectID,0,0,0]);
+	message_send_tcp_all(['connect_player',connectID,0,0,0,0]);
 	
-	for(var k=0; k<activeClients.length; k++){
-		var id = activeClients[k];
-		message_send_tcp(['connect_player',id,clients[k].position[0],clients[k].position[1],clients[k].position[2]],connectID);
+	for(var k=0; k<activeEntity.length; k++){
+		var id = activeEntity[k];
+		message_send_tcp(['connect_player',id,clients[k].position[0],clients[k].position[1],clients[k].position[2],0],connectID);
 	}
 	
 	ws.onclose = function(){

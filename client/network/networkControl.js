@@ -50,13 +50,14 @@ if(Array.isArray(data)==true){
 		break;
 		case "connect_id":
 			connectID = data[1];
-			entity_create(connectID);
+			entity_create(connectID,0);
 			entity[connectID].position = playerControls.position;
 			entity[connectID].drawPosition = playerControls.position;
 		break;
 		case "connect_player":
+			console.log(data);
 			if(data[1]!=connectID){
-				entity_create(data[1]);
+				entity_create(data[1],data[5]);
 				entity[data[1]].position=[data[2],data[3],data[4]];
 				entity[data[1]].drawPosition=[data[2],data[3],data[4]];
 			}

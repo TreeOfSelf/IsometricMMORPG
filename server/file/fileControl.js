@@ -30,7 +30,10 @@ map_load = function(){
 				var chunkID = chunk_returnID(l[0][0],l[0][1],l[0][2]);
 				chunk[chunkID].blockArray  = new Uint8Array( l[1] )
 				chunk[chunkID].sceneryArray = l[2];
+				
+
 			}
+			
 		}
 		
 	});

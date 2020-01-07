@@ -11,6 +11,7 @@ renderSettings = {
 	zoom : 1,
 	camera : [0,0,0],
 	textureResolution :[0,0],
+	viewUp : 12,
 }
 
 
@@ -77,10 +78,10 @@ function render() {
 
 	//Rotate blocks to target
 	renderSettings.blockRotation=[
-	renderSettings.blockRotation[0]+(renderSettings.blockRotationTarget[0]-renderSettings.blockRotation[0])*0.04,
-	renderSettings.blockRotation[1]+(renderSettings.blockRotationTarget[1]-renderSettings.blockRotation[1])*0.04,
-	renderSettings.blockRotation[2]+(renderSettings.blockRotationTarget[2]-renderSettings.blockRotation[2])*0.04,
-	renderSettings.blockRotation[3]+(renderSettings.blockRotationTarget[3]-renderSettings.blockRotation[3])*0.04];
+	renderSettings.blockRotation[0]+(renderSettings.blockRotationTarget[0]-renderSettings.blockRotation[0])*0.01,
+	renderSettings.blockRotation[1]+(renderSettings.blockRotationTarget[1]-renderSettings.blockRotation[1])*0.01,
+	renderSettings.blockRotation[2]+(renderSettings.blockRotationTarget[2]-renderSettings.blockRotation[2])*0.01,
+	renderSettings.blockRotation[3]+(renderSettings.blockRotationTarget[3]-renderSettings.blockRotation[3])*0.01];
 	
 	
 	
@@ -90,7 +91,7 @@ function render() {
 	gl.uniform1f(isometricShaderProgram.uniforms.resolution, renderSettings.resolution);
 	gl.uniform1f(isometricShaderProgram.uniforms.soundWave, Math.sin(audioLevel)*10.0);
 	gl.uniform3fv(isometricShaderProgram.uniforms.camera, [playerControls.position[0],playerControls.position[1],-playerControls.position[2]]);
-	
+	gl.uniform1f(isometricShaderProgram.uniforms.viewUp, renderSettings.viewUp);
 	
 	gl.uniform4fv(isometricShaderProgram.uniforms.blockRotation, renderSettings.blockRotation);
 	if(playerControls.placing==0){
@@ -175,9 +176,9 @@ function render() {
 	}
 	var chunkList = [];
 	
-	for(var xx=-5;xx<=5;xx++){
-	for(var yy=-5;yy<=5;yy++){	
-	for(var zz=-5;zz<=5;zz++){
+	for(var xx=-20;xx<=20;xx++){
+	for(var yy=-20;yy<=20;yy++){	
+	for(var zz=-10;zz<=10;zz++){
 		var chunkPos = chunk_get(playerControls.position[0]+xx*blockSettings.chunk.XYZ,playerControls.position[1]+yy*blockSettings.chunk.XYZ,playerControls.position[2]+zz*blockSettings.chunk.XYZ);
 		var chunkID = chunk_returnID(chunkPos[0],chunkPos[1],chunkPos[2]);
 		if(chunk[chunkID]!=null){
@@ -246,19 +247,21 @@ function render() {
 				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.22,
 				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],blockShadow[2]-1-0.25
 				)
+				
+				textureArray=textureArray.concat(entity_get_texture(entityID));
+				
 				textureArray.push(
-				0,0,0.51,0,
+				36/140,0,
 				)
 			}else{
 				positionArray.push(
 				entity[entityID].drawPosition[0],entity[entityID].drawPosition[1],entity[entityID].drawPosition[2]-0.22,
 				)
-				textureArray.push(
-				0,0,
-				)	
+				textureArray=textureArray.concat(entity_get_texture(entityID));	
 			}
 	}
 	
+
 	
 	gl.bindVertexArray(isometricVAO);
 	gl.bindBuffer(gl.ARRAY_BUFFER, cursorBuffer);
@@ -274,8 +277,8 @@ function render() {
 
 	gl.bindTexture(gl.TEXTURE_2D, entityTexture);
 	gl.uniform1f(isometricShaderProgram.uniforms.notSquare,0);
-			gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.5,1]);
-	gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 45.0);
+	gl.uniform2fv(isometricShaderProgram.uniforms.textureResolution,[0.25,1]);
+	gl.uniform1f(isometricShaderProgram.uniforms.pixelSize, 35.0);
 	gl.uniform1f(isometricShaderProgram.uniforms.pixelOffset, -0.9);
 	gl.uniform1f(isometricShaderProgram.uniforms.pixelDepthOffset, -1.0);
 	gl.uniform1f(isometricShaderProgram.uniforms.alphaLimit,0.7),
