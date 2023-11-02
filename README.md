@@ -12,7 +12,7 @@ It uses WebGL for the graphics rendering, for the most optimized drawing. The ne
 The server is ran in node.js, and the client can be hosted on any HTTP hosting. 
 
 
-## Screenshot
+## Media (low quality!)
 
 ![image](https://hardcoreanarchy.gay/images/isometric.gif)
 
