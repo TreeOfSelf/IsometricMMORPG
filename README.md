@@ -14,7 +14,7 @@ The server is ran in node.js, and the client can be hosted on any HTTP hosting.
 
 ## Media (low quality!)
 
-![image](https://hardcoreanarchy.gay/images/isometric.gif)
+![image](https://sebastiancodes.online/github/isometric.gif)
 
 ## License
 
